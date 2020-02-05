@@ -1,3 +1,4 @@
+library(igraph)
 ## remove edges between M1+H and M2+Na, M3+H and M4+K, in general when there is 
 ## a link between an adduct and a molecular ion
 
@@ -29,26 +30,29 @@
 #                      c(0, 1, 0, 0, 1, 0)), ## M3+Na
 #                    
 
-
-mat_test <- matrix(c(c(0, 1, 0, 0, 0, 1), ## M1+H
+## real world example 1
+mat_1 <- matrix(c(c(0, 1, 0, 0, 0, 1), ## M1+H
                      c(0, 0, 0, 0, 0, 0), ## M1+Na
                      c(1, 0, 0, 1, 0, 0), ## M2+H
                      c(0, 1, 0, 0, 0, 0), ## M2+Na
                      c(0, 1, 0, 0, 0, 1), ## M3+H
                      c(0, 0, 0, 0, 0, 0)), ## M3+Na
                    byrow = TRUE, ncol = 6, nrow = 6)
-mat_test_transformation <- matrix(c(c("", "adduct_Na", "", "", "", "transf_gluc_F"), ## M1+H
-                                    c("", "", "", "", "", ""), ## M1+Na
-                                    c("transf_gluc_T", "", "", "adduct_Na", "", ""), ## M2+H
-                                    c("", "transf_gluc_T", "", "", "", ""), ## M2+Na
-                                    c("", "transf_gluc_F", "", "", "", "adduct_Na"), ## M3+H
-                                    c("", "", "", "", "", "")), ## M3+Na
-                                  byrow = TRUE, ncol = 6, nrow = 6)
-colnames(mat_test) <- c("M1+H", "M1+Na", "M2+H", "M2+Na", "M3+H", "M3+Na")
-rownames(mat_test) <- colnames(mat_test)
+mat_1_transf <- matrix(c(
+    c("", "adduct_Na", "", "", "", "transf_gluc_F"), ## M1+H
+    c("", "", "", "", "", ""), ## M1+Na
+    c("transf_gluc_T", "", "", "adduct_Na", "", ""), ## M2+H
+    c("", "transf_gluc_T", "", "", "", ""), ## M2+Na
+    c("", "transf_gluc_F", "", "", "", "adduct_Na"), ## M3+H
+    c("", "", "", "", "", "")), ## M3+Na
+    byrow = TRUE, ncol = 6, nrow = 6)
+colnames(mat_1) <- c("M1+H", "M1+Na", "M2+H", "M2+Na", "M3+H", "M3+Na")
+rownames(mat_1) <- colnames(mat_1)
+net_mat_1 <- graph_from_adjacency_matrix(mat_1, mode = "directed")
+plot(net_mat_1)
 
-## real world example 1
-mat_test2 <- matrix(c(c(0, 1, 1, 0, 1, 0, 0, 0, 0), ## "M_1"
+## real world example 2
+mat_2 <- matrix(c(c(0, 1, 1, 0, 1, 0, 0, 0, 0), ## "M_1"
                       c(0, 0, 1, 1, 0, 0, 0, 1, 0), ## "M+1_1"
                       c(0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+2_1"
                       c(0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+1+45_1"
@@ -58,7 +62,7 @@ mat_test2 <- matrix(c(c(0, 1, 1, 0, 1, 0, 0, 0, 0), ## "M_1"
                       c(0, 0, 0, 0, 0, 0, 0, 0, 0), ##"M+1+152_5"
                       c(0, 0, 1, 0, 0, 0, 0, 0, 0)), ## "M+2-152_6"
                     byrow = TRUE, ncol = 9, nrow = 9)
-mat_test2_transformation <- matrix(c(
+mat_2_transf <- matrix(c(
     c("", "adduct_+1",  "adduct_+2",  "",          "transf_152", "", "", "",           ""), ## "M_1"
     c("", "",           "adduct_+1",  "transf_45", "",           "", "", "transf_152", ""), ## "M+1_1"
     c("", "",           "",           "",          "",           "", "", "",           ""), ## "M+2_1"
@@ -69,39 +73,39 @@ mat_test2_transformation <- matrix(c(
     c("", "",           "",           "",          "",           "", "", "",           ""), ##"M+1+152_5"
     c("", "",           "transf_152", "",          "",           "", "", "",           "")), ## "M+2-152_6"
     byrow = TRUE, ncol = 9, nrow = 9)
-colnames(mat_test2) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_5", "M+2-152_6")
-rownames(mat_test2) <- colnames(mat_test2)
-colnames(mat_test2_transformation) <- rownames(mat_test2_transformation) <- colnames(mat_test2)
-net_mat2 <- graph_from_adjacency_matrix(mat_test2, mode = "directed")
-plot(net_mat2)
+colnames(mat_2) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_5", "M+2-152_6")
+rownames(mat_2) <- colnames(mat_2)
+colnames(mat_2_transf) <- rownames(mat_2_transf) <- colnames(mat_2)
+net_mat_2 <- graph_from_adjacency_matrix(mat_2, mode = "directed")
+plot(net_mat_2)
 
-## real world example 3
-mat_test3 <- matrix(c(c(0, 1, 1, 0, 1, 0, 0, 0, 0), ## "M_1"
+## real world example 3 (same as mat_2 atm)
+mat_3 <- matrix(c(c(0, 1, 1, 0, 1, 0, 0, 0, 0), ## "M_1"
                       c(0, 0, 1, 1, 0, 0, 0, 1, 0), ## "M+1_1"
-                      c(0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+2_1"
+                      c(0, 0, 0, 0, 0, 0, 0, 0, 1), ## "M+2_1"
                       c(0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+1+45_1"
-                      c(0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+152_2"
+                      c(0, 0, 0, 0, 0, 0, 0, 1, 1), ## "M+152_2"
                       c(0, 1, 0, 0, 0, 0, 0, 0, 0), ## "M+1-152_3"
                       c(0, 1, 0, 0, 0, 0, 0, 0, 0), ## "M+1-152_4"
-                      c(0, 0, 0, 0, 0, 0, 0, 0, 0), ##"M+1+152_5"
-                      c(0, 0, 1, 0, 0, 0, 0, 0, 0)), ## "M+2-152_6"
+                      c(0, 0, 0, 0, 0, 0, 0, 0, 1), ##"M+1+152_2"
+                      c(0, 0, 0, 0, 0, 0, 0, 0, 0)), ## "M+2_2"
                     byrow = TRUE, ncol = 9, nrow = 9)
-mat_test3_transformation <- matrix(c(
+mat_3_transf <- matrix(c(
     c("", "adduct_+1",  "adduct_+2",  "",          "transf_152", "", "", "",           ""), ## "M_1"
     c("", "",           "adduct_+1",  "transf_45", "",           "", "", "transf_152", ""), ## "M+1_1"
-    c("", "",           "",           "",          "",           "", "", "",           ""), ## "M+2_1"
+    c("", "",           "",           "",          "",           "", "", "",           "transf_152"), ## "M+2_1"
     c("", "",           "",           "",          "",           "", "", "",           ""), ## "M+1+45_1"
-    c("", "",           "",           "",          "",           "", "", "",           ""), ## "M+152_2"
+    c("", "",           "",           "",          "",           "", "", "adduct_+1", "adduct_+2"), ## "M+152_2"
     c("", "transf_152", "",           "",          "",           "", "", "",           ""), ## "M+1-152_3"
     c("", "transf_152", "",           "",          "",           "", "", "",           ""), ## "M+1-152_4"
-    c("", "",           "",           "",          "",           "", "", "",           ""), ##"M+1+152_5"
-    c("", "",           "transf_152", "",          "",           "", "", "",           "")), ## "M+2-152_6"
+    c("", "",           "",           "",          "",           "", "", "",           "adduct_+1"), ##"M+1+152_2"
+    c("", "",           "", "",          "",           "", "", "",           "")), ## "M+2+152_2"
     byrow = TRUE, ncol = 9, nrow = 9)
-colnames(mat_test3) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_5", "M+2-152_6")
-rownames(mat_test3) <- colnames(mat_test3)
-colnames(mat_test3_transformation) <- rownames(mat_test3_transformation) <- colnames(mat_test3)
-net_mat3 <- graph_from_adjacency_matrix(mat_test3, mode = "directed")
-plot(net_mat3)
+colnames(mat_3) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_2", "M+2-152_2")
+rownames(mat_3) <- colnames(mat_3)
+colnames(mat_3_transf) <- rownames(mat_3_transf) <- colnames(mat_3)
+net_mat_3 <- graph_from_adjacency_matrix(mat_3, mode = "directed")
+plot(net_mat_3)
 
 ## node with outgoing transf link should not have outgoing adduct link when
 ## the adduct-linking vertex has an ingoing adduct link of same type
@@ -198,13 +202,12 @@ removeFalsLinksCircular <- function(mat_l) {
             ## check only outgoing links now 
             if (length(transf_M_og_ind)) {
                 
-                mat <- matrix(mat_char[M[[i]], ], byrow = FALSE, ncol = ncol(mat_char))
-                colnames(mat) <- colnames(mat_char)
+                tmp <- matrix(mat_char[M[[i]], ], byrow = FALSE, ncol = ncol(mat_char))
                 
                 ## 2) check if the molecular ion has transf_ 
-                transf_MI_og_ind <- apply(mat, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
+                transf_MI_og_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
                 transf_MI_og_ind <- which(transf_MI_og_ind, arr.ind = TRUE)
-                transf_MI_og <- mat_char[M[[i]], ][transf_MI_og_ind]
+                transf_MI_og <- tmp[transf_MI_og_ind]
                 
                 #if (length(transf_MI_og)) {
                 ## 3) check if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
@@ -212,13 +215,20 @@ removeFalsLinksCircular <- function(mat_l) {
                 ## for og_ind
                 #if (length(transf_MI_og_ind)) {
                 
-                ind_match <- transf_M_og %in% transf_MI_og #match(transf_M_og, transf_MI_og) ## if NA, then it means that there is no shared transf_ --> remove
+                ind_match <- transf_M_og %in% transf_MI_og
                 ind_rm <- which(!ind_match) ## which(is.na(ind_match))
                 ind_match <- which(ind_match) ##which(!is.na(ind_match))
                 
                 ## for ind_match check if the linking feature of M has a link
                 ## with the linking feature of MI
-                addiso_bw_linkFeat <- mat_char[transf_M_og_ind[ind_match], ][transf_MI_og_ind]
+                tmp <- matrix(mat_char[, transf_M_og_ind[ind_match]], nrow = length(ind_match))
+                
+                if (nrow(tmp) == 1 & is.matrix(transf_MI_og_ind)) {
+                    addiso_bw_linkFeat <- tmp[transf_MI_og_ind[, "col"]]    
+                } else {
+                    addiso_bw_linkFeat <- tmp[transf_MI_og_ind] 
+                }
+                
                 
                 ## mat_char[M[[i]], i] is the type of link between MI and M
                 #if (addiso_bw_linkFeat %in% mat_char[M[[i]], i]) {
@@ -230,23 +240,30 @@ removeFalsLinksCircular <- function(mat_l) {
             }
             ## check only ingoing links now
             if (length(transf_M_ig_ind)) {
-                ## 2) check if the molecular ion(s) have transf_ 
-                tmp <- t(matrix(mat_char[, M[[i]]], byrow = TRUE, ncol = ncol(mat_char)))
                 
+                tmp <- matrix(mat_char[, M[[i]]], byrow = TRUE, ncol = ncol(mat_char)) ## was t()
+                
+                ## 2) check if the molecular ion(s) have transf_ 
                 transf_MI_ig_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## ingoing transf links from molecular ions
                 transf_MI_ig_ind <- which(transf_MI_ig_ind, arr.ind = TRUE)
-                transf_MI_ig <- mat_char[, M[[i]]][transf_MI_ig_ind]
+                transf_MI_ig <- tmp[transf_MI_ig_ind]
                 
                 ## 3) check, if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
                 ## if so, then keep the relation, otherwise remove the link from M[[i]] with the transf
                 ## for og_ind
-                ind_match <- transf_M_ig %in% transf_MI_ig ## if NA, then it means that there is no shared transf_ --> remove
+                ind_match <- transf_M_ig %in% transf_MI_ig 
                 ind_rm <- which(!ind_match)
                 ind_match <- which(ind_match)
                 
                 ## for ind_match check if the linking feature of M has a link
                 ## with the linking feature of MI
-                addiso_bw_linkFeat <- mat_char[, transf_M_ig_ind[ind_match]][transf_MI_ig_ind]
+                tmp <- matrix(mat_char[, transf_M_ig_ind[ind_match]], ncol = length(ind_match))
+                if (ncol(tmp) == 1 & is.matrix(transf_MI_ig_ind)) {
+                    addiso_bw_linkFeat <- tmp[transf_MI_ig_ind[, "col"]]    
+                } else {
+                    addiso_bw_linkFeat <- tmp[transf_MI_ig_ind]    
+                }
+                
                 
                 ## mat_char[M[[i]], i] is the type of link between MI and M
                 ## if addiso_bw_linkFeat %in% mat_char[M[[i]], i]
@@ -264,13 +281,17 @@ removeFalsLinksCircular <- function(mat_l) {
     
 }
 
+mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf))
+mat_rem <- removeFalsLinksCircular(mat_rem)
+plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
-mat_rem <- removeFalseLinksAdducts(list(mat_test2, mat_test2_transformation))
-
+mat_rem <- removeFalseLinksAdducts(list(mat_2, mat_2_transf))
 mat_rem <- removeFalsLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed")) ## should only result in link between M_1 and M+152_2
-mat_rem <- removeFalseLinksAdducts(list(mat_test, mat_test_transformation))
-mat_rem <- removeFalsLinksCircular(mat_rem)
+
+mat_rem <- removeFalseLinksAdducts(list(mat_3, mat_3_transf))
+mat_rem <- removeFalsLinksCircular(list(mat_3, mat_3_transf))
+plot(graph_from_adjacency_matrix(mat_3), mode = "directed")
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 ## raises warnings adduct_j %in% adduct_i
 
