@@ -176,7 +176,7 @@ removeFalseLinksAdducts <- function(mat_l) {
 ## 2) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
 ## from M+1 to another mass feature M, AND there is a link between M and M2-1,
 ## then keep the the link M+1 and M2 (support that mass feature is a metabolite)
-removeFalsLinksCircular <- function(mat_l) {
+removeFalseLinksCircular <- function(mat_l) {
     
     mat_num <- mat_l[[1]]
     mat_char <- mat_l[[2]]
@@ -209,70 +209,113 @@ removeFalsLinksCircular <- function(mat_l) {
                 transf_MI_og_ind <- which(transf_MI_og_ind, arr.ind = TRUE)
                 transf_MI_og <- tmp[transf_MI_og_ind]
                 
-                #if (length(transf_MI_og)) {
-                ## 3) check if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
-                ## if so, then keep the relation, otherwise remove the link from M[[i]] with the transf
-                ## for og_ind
-                #if (length(transf_MI_og_ind)) {
                 
-                ind_match <- transf_M_og %in% transf_MI_og
-                ind_rm <- which(!ind_match) ## which(is.na(ind_match))
-                ind_match <- which(ind_match) ##which(!is.na(ind_match))
-                
-                ## for ind_match check if the linking feature of M has a link
-                ## with the linking feature of MI
-                tmp <- matrix(mat_char[, transf_M_og_ind[ind_match]], nrow = length(ind_match))
-                
-                if (nrow(tmp) == 1 & is.matrix(transf_MI_og_ind)) {
-                    addiso_bw_linkFeat <- tmp[transf_MI_og_ind[, "col"]]    
+                if (length(transf_MI_og)) {
+                    ## 3) check if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
+                    ## if so, then keep the relation, otherwise remove the link from M[[i]] with the transf
+                    ## for og_ind
+                    if (is.matrix(transf_MI_og_ind)) {
+                        transf_MI_og_ind <- transf_MI_og_ind[transf_MI_og %in% transf_M_og, ]    
+                    } else {
+                        transf_MI_og_ind <- transf_MI_og_ind[transf_MI_og %in% transf_M_og]
+                    }
+                    transf_MI_og <- transf_MI_og[transf_MI_og %in% transf_M_og]
+                    ind_match <-  match(transf_MI_og, transf_M_og)
+                    ind_rm <- which(is.na(ind_match))
+                    ind_match <- which(!is.na(ind_match))
+                    
+                    ## for ind_match check if the linking feature of M has a link
+                    ## with the linking feature of MI
+                    if (length(ind_match) == 1) {
+                        links_check <- transf_MI_og_ind[ind_match]    
+                        ## linking feature of M
+                        linkFeat_M <- mat_char[, transf_M_og_ind]
+                        addiso_bw_linkFeat <- linkFeat_M[links_check]
+                        
+                    } else {
+                        links_check <- transf_MI_og_ind[ind_match, ]    
+                        ## linking feature of M
+                        linkFeat_M <- mat_char[, transf_M_og_ind]
+                        addiso_bw_linkFeat <- linkFeat_M[links_check[, "col"]]
+                    }
+                    
+                    ## check if the link between M and MI is the same as 
+                    ## the link between the linking feature of M and the linking
+                    ## feature of MI (addiso_bw_linkFeat)
+                    inds_link <- match(addiso_bw_linkFeat, mat_char[M[[i]], i])
+                    ind_rm <- c(ind_rm, ind_match[which(is.na(inds_link))])
+
+                    ## remove:
+                    #if (length(ind_rm))
+                    if (is.matrix(transf_M_og_ind)) {
+                        ind_rm <- matrix(transf_M_og_ind[ind_rm, ], ncol = 2)    
+                        mat_num[ind_rm] <- 0
+                    } else {
+                        mat_num[i, transf_M_og_ind[ind_rm]] <- 0
+                    }
                 } else {
-                    addiso_bw_linkFeat <- tmp[transf_MI_og_ind] 
+                    ## if MI has no outgoing links, remove outgoing links to M
+                    mat_num[i, transf_M_og_ind] <- 0
                 }
-                
-                
-                ## mat_char[M[[i]], i] is the type of link between MI and M
-                #if (addiso_bw_linkFeat %in% mat_char[M[[i]], i]) {
-                ind_rm <- c(ind_rm, ind_match[!addiso_bw_linkFeat %in% mat_char[M[[i]], i]])
-                
-                ## remove:
-                #if (length(ind_rm))
-                    mat_num[i, transf_M_og_ind[ind_rm]] <- 0
                 
             }
             ## check only ingoing links now
             if (length(transf_M_ig_ind)) {
-                
+
                 tmp <- matrix(mat_char[, M[[i]]], byrow = TRUE, ncol = ncol(mat_char)) ## was t()
-                
-                ## 2) check if the molecular ion(s) have transf_ 
+
+                ## 2) check if the molecular ion(s) have ingoing transf_
                 transf_MI_ig_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## ingoing transf links from molecular ions
                 transf_MI_ig_ind <- which(transf_MI_ig_ind, arr.ind = TRUE)
                 transf_MI_ig <- tmp[transf_MI_ig_ind]
-                
-                ## 3) check, if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
-                ## if so, then keep the relation, otherwise remove the link from M[[i]] with the transf
-                ## for og_ind
-                ind_match <- transf_M_ig %in% transf_MI_ig 
-                ind_rm <- which(!ind_match)
-                ind_match <- which(ind_match)
-                
-                ## for ind_match check if the linking feature of M has a link
-                ## with the linking feature of MI
-                tmp <- matrix(mat_char[, transf_M_ig_ind[ind_match]], ncol = length(ind_match))
-                if (ncol(tmp) == 1 & is.matrix(transf_MI_ig_ind)) {
-                    addiso_bw_linkFeat <- tmp[transf_MI_ig_ind[, "col"]]    
+
+                if (length(transf_MI_ig)) {
+                    ## 3) check, if transf from molecular ion and M[[i]] form the same adduct than molecular ion and M[[i]]
+                    ## if so, then keep the relation, otherwise remove the link from M[[i]] with the transf
+                    ## for og_ind
+                    if (is.matrix(transf_MI_ig_ind)) {
+                        transf_MI_ig_ind <- transf_MI_ig_ind[transf_MI_ig %in% transf_M_ig, ]    
+                    } else {
+                        transf_MI_ig_ind <- transf_MI_ig_ind[transf_MI_ig %in% transf_M_ig]
+                    }
+                    transf_MI_ig <- transf_MI_ig[transf_MI_ig %in% transf_M_ig]
+                    ind_match <- match(transf_MI_ig, transf_M_ig)
+                    ind_rm <- which(is.na(ind_match))
+                    ind_match <- which(!is.na(ind_match))
+
+                    ## for ind_match check if the linking feature of M has a link
+                    ## with the linking feature of MI
+                    if (length(ind_match) == 1) {
+                        links_check <- transf_MI_ig_ind[ind_match]
+                        ## linking features of M
+                        linkFeat_M <- mat_char[transf_M_ig_ind, ]
+                        addiso_bw_linkFeat <- linkFeat_M[links_check]
+
+                    } else {
+                        links_check <- transf_MI_ig_ind[ind_match, ]
+                        ## linking features of M
+                        linkFeat_M <- mat_char[transf_M_ig_ind, ]
+                        addiso_bw_linkFeat <- linkFeat_M[links_check[, "col"]]
+                    }
+
+                    ## check if the link between M and MI is the same as the
+                    ## link between the linking feature of M and the linking
+                    ## feature of MI (addiso_bw_linkFeat)
+                    inds_link <- match(addiso_bw_linkFeat, mat_char[M[[i]], i])
+                    ind_rm <- c(ind_rm, ind_match[which(is.na(inds_link))])
+
+                    # remove:
+                    if (is.matrix(transf_M_ig_ind)) {
+                        ind_rm <- matrix(transf_M_ig_ind[ind_rm, 2:1], ncol = 2)
+                        mat_num[ind_rm] <- 0
+                    } else {
+                        mat_num[transf_M_ig_ind[ind_rm], i] <- 0
+                    }
                 } else {
-                    addiso_bw_linkFeat <- tmp[transf_MI_ig_ind]    
+                    ## if MI has no ingoing links, remove ingoing links to M
+                    mat_num[transf_M_ig_ind, i] <- 0
                 }
-                
-                
-                ## mat_char[M[[i]], i] is the type of link between MI and M
-                ## if addiso_bw_linkFeat %in% mat_char[M[[i]], i]
-                ind_rm <- c(ind_rm, ind_match[!addiso_bw_linkFeat %in% mat_char[M[[i]], i]])
-                
-                ## remove:
-                #if (length(ind_rm)) 
-                    mat_num[transf_M_ig_ind[ind_rm], i] <- 0
+
             }
         }
     }
@@ -283,16 +326,131 @@ removeFalsLinksCircular <- function(mat_l) {
    
 }
 
+removeFalseLinksCircular2 <- function(mat_l) {
+    
+    mat_num <- mat_l[[1]]
+    mat_char <- mat_l[[2]]
+    
+    ## first find relations with adducts: 
+    ## (molecular ion suppose this is the vertex that has no ingoing adduct_ link)
+    ## i.e. the column of M does not have a "adduct_"
+    M <- apply(mat_char, 2, grep, pattern = "adduct_")
+    
+    ## iterate through M where M is not integer(0) --> these are adducts of
+    ## the rows i 
+    for (i in seq_len(length(M))) {
+        
+        if (length(M[[i]])) {
+            ## if length(M[[i]]) != 0, M[[i]] is not the molecular ion:
+            ## 1) --> check if it has transf_
+            transf_M_og_ind <- grep(mat_char[i, ], pattern = "transf_")
+            transf_M_og <- mat_char[i, transf_M_og_ind]
+            transf_M_ig_ind <- grep(mat_char[, i], pattern = "transf_")
+            transf_M_ig <- mat_char[transf_M_ig_ind, i]
+            
+            print(i)
+            ## check only outgoing links now 
+           
+            mat_char[M[[i]], ] ## adduct relation MI to M
+            
+            if (length(transf_M_og_ind)) {
+                mat_char[i, ] ## outgoing links of M
+                mat_char[M[[i]], ] ## outgoing links of MI
+                
+                tmp <- matrix(mat_char[M[[i]], ], byrow = FALSE, ncol = ncol(mat_char))
+                ## 2) check if the molecular ion has transf_ 
+                transf_MI_og_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
+                transf_MI_og_ind <- which(transf_MI_og_ind, arr.ind = TRUE)
+                
+                if (length(transf_MI_og_ind)) {
+                ## iterate thorough all transf_M_og_ind --> check if
+                for(j in 1:length(transf_M_og_ind)) {
+                    ind_j <- transf_M_og_ind[j]
+                    if (!is.matrix(transf_MI_og_ind)) {
+                        for (k in 1:length(transf_MI_og_ind)) {
+                            adduct_ij <- mat_char[transf_MI_og_ind[k], ind_j]
+                            if (adduct_ij != mat_char[M[[i]], i]) {
+                                ## remove link transf_M_og_ind[j] at row i
+                                if (i == 2 & ind_j == 9) {print(j); break()}
+                                mat_num[i, ind_j] <- 0
+                            }   
+                        }
+                    } else {
+                        for(k in 1:nrow(transf_MI_og_ind)) {
+                            adduct_ij <- mat_char[transf_MI_og_ind[k, "row"], ind_j]
+                            if (adduct_ij != mat_char[transf_MI_og_ind[k, "row"], i]) {
+                                if (i == 2 & ind_j == 9) {print(j); break()}
+                                mat_num[i, ind_j] <- 0
+                            }
+                        } 
+                    }
+                }
+                } else {
+                    mat_num[i, transf_M_ig_ind] <- 0   
+                }
+            }
+        ## check only ingoing links now
+        if (length(transf_M_ig_ind)) {
+            mat_char[, i] ## ingoing links to M
+            mat_char[, M[[i]]] ## ingoing links of MI
+            
+            tmp <- matrix(mat_char[, M[[i]]], byrow = TRUE, ncol = ncol(mat_char))
+            ## 2) check if the molecular ion has transf_ 
+            transf_MI_ig_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
+            transf_MI_ig_ind <- which(transf_MI_ig_ind, arr.ind = TRUE)
+            
+            if (length(transf_MI_ig_ind)) {
+            ## iterate thorough all transf_M_og_ind --> check if
+            for(j in 1:length(transf_M_ig_ind)) {
+                ind_j <- transf_M_ig_ind[j]
+                if (!is.matrix(transf_MI_ig_ind)) {
+                    for (k in 1:length(transf_MI_ig_ind)) {
+                        adduct_ij <- mat_char[transf_MI_ig_ind[k], ind_j]
+                        if (adduct_ij != mat_char[M[[i]], i]) {
+                            ## remove link transf_M_ig_ind[j] at row i
+                            if (i == 9 & ind_j == 2) {print(j); break()}
+                            mat_num[ind_j, i] <- 0
+                        }   
+                    }
+                } else {
+                    for(k in 1:nrow(transf_MI_ig_ind)) {
+                        adduct_ij <- mat_char[transf_MI_ig_ind[k, "row"], ind_j]
+                        if (adduct_ij != mat_char[transf_MI_ig_ind[k, "row"], i]) {
+                            if (i == 9 & ind_j == 2) {print(j); break()}
+                            mat_num[ind_j, i] <- 0
+                        }
+                    } 
+                }
+            }
+            } else {
+                
+                mat_num[transf_M_ig_ind, i] <- 0
+            }
+        }
+        }
+    }
+    ## set mat_char to "" where mat_num == 0
+    mat_char[which(mat_num == 0)] <- ""
+    
+    return(list(mat_num, mat_char))
+    
+}
+
+mat_l <- list(mat_1, mat_1_transf)
 mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf))
-mat_rem <- removeFalsLinksCircular(mat_rem)
+mat_rem <- removeFalseLinksCircular2(mat_rem)
+plot(graph_from_adjacency_matrix(mat_l[[1]], mode = "directed"))
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
-mat_rem <- removeFalseLinksAdducts(list(mat_2, mat_2_transf))
-mat_rem <- removeFalsLinksCircular(mat_rem)
-plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed")) ## should only result in link between M_1 and M+152_2
+mat_l <- list(mat_2, mat_2_transf)
+mat_rem <- removeFalseLinksAdducts(mat_l)
+mat_rem <- removeFalseLinksCircular2(mat_rem)
+plot(graph_from_adjacency_matrix(mat_l[[1]], mode = "directed"))
+plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed")) ## should only result in link between M_1->M+152_2, M_1-> M_2, M_1_M_3, M_2->M_3
 
 #mat_rem <- removeFalseLinksAdducts(list(mat_3, mat_3_transf))
-mat_rem <- removeFalsLinksCircular(list(mat_3, mat_3_transf))
+mat_l <- list(mat_3, mat_3_transf)
+mat_rem <- removeFalseLinksCircular2(list(mat_3, mat_3_transf))
 plot(graph_from_adjacency_matrix(mat_3), mode = "directed")
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 ## raises warnings adduct_j %in% adduct_i
