@@ -101,7 +101,7 @@ mat_3_transf <- matrix(c(
     c("", "",           "",           "",          "",           "", "", "",           "adduct_+1"), ##"M+1+152_2"
     c("", "",           "", "",          "",           "", "", "",           "")), ## "M+2+152_2"
     byrow = TRUE, ncol = 9, nrow = 9)
-colnames(mat_3) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_2", "M+2-152_2")
+colnames(mat_3) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_2", "M+2+152_2")
 rownames(mat_3) <- colnames(mat_3)
 colnames(mat_3_transf) <- rownames(mat_3_transf) <- colnames(mat_3)
 net_mat_3 <- graph_from_adjacency_matrix(mat_3, mode = "directed")
@@ -235,7 +235,8 @@ removeFalsLinksCircular <- function(mat_l) {
                 ind_rm <- c(ind_rm, ind_match[!addiso_bw_linkFeat %in% mat_char[M[[i]], i]])
                 
                 ## remove:
-                mat_num[i, transf_M_og_ind[ind_rm]] <- 0
+                #if (length(ind_rm))
+                    mat_num[i, transf_M_og_ind[ind_rm]] <- 0
                 
             }
             ## check only ingoing links now
@@ -270,7 +271,8 @@ removeFalsLinksCircular <- function(mat_l) {
                 ind_rm <- c(ind_rm, ind_match[!addiso_bw_linkFeat %in% mat_char[M[[i]], i]])
                 
                 ## remove:
-                mat_num[transf_M_ig_ind[ind_rm], i] <- 0
+                #if (length(ind_rm)) 
+                    mat_num[transf_M_ig_ind[ind_rm], i] <- 0
             }
         }
     }
@@ -278,10 +280,10 @@ removeFalsLinksCircular <- function(mat_l) {
     mat_char[which(mat_num == 0)] <- ""
     
     return(list(mat_num, mat_char))
-    
+   
 }
 
-mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf)) 
+mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf))
 mat_rem <- removeFalsLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
@@ -289,7 +291,7 @@ mat_rem <- removeFalseLinksAdducts(list(mat_2, mat_2_transf))
 mat_rem <- removeFalsLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed")) ## should only result in link between M_1 and M+152_2
 
-mat_rem <- removeFalseLinksAdducts(list(mat_3, mat_3_transf))
+#mat_rem <- removeFalseLinksAdducts(list(mat_3, mat_3_transf))
 mat_rem <- removeFalsLinksCircular(list(mat_3, mat_3_transf))
 plot(graph_from_adjacency_matrix(mat_3), mode = "directed")
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
