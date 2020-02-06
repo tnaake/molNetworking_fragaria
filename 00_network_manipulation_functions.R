@@ -371,22 +371,21 @@ removeFalseLinksCircular2 <- function(mat_l) {
                             adduct_ij <- mat_char[transf_MI_og_ind[k], ind_j]
                             if (adduct_ij != mat_char[M[[i]], i]) {
                                 ## remove link transf_M_og_ind[j] at row i
-                                if (i == 2 & ind_j == 9) {print(j); break()}
                                 mat_num[i, ind_j] <- 0
                             }   
                         }
                     } else {
                         for(k in 1:nrow(transf_MI_og_ind)) {
                             adduct_ij <- mat_char[transf_MI_og_ind[k, "row"], ind_j]
-                            if (adduct_ij != mat_char[transf_MI_og_ind[k, "row"], i]) {
-                                if (i == 2 & ind_j == 9) {print(j); break()}
+                            if (adduct_ij != mat_char[i, M[[i]][transf_MI_og_ind[k, "row"]]]) {
                                 mat_num[i, ind_j] <- 0
                             }
                         } 
                     }
                 }
                 } else {
-                    mat_num[i, transf_M_ig_ind] <- 0   
+                    #if (i == 2 & transf_M_ig_ind == 9) {break()}
+                    #mat_num[i, transf_M_ig_ind] <- 0   
                 }
             }
         ## check only ingoing links now
@@ -408,22 +407,19 @@ removeFalseLinksCircular2 <- function(mat_l) {
                         adduct_ij <- mat_char[transf_MI_ig_ind[k], ind_j]
                         if (adduct_ij != mat_char[M[[i]], i]) {
                             ## remove link transf_M_ig_ind[j] at row i
-                            if (i == 9 & ind_j == 2) {print(j); break()}
                             mat_num[ind_j, i] <- 0
                         }   
                     }
                 } else {
                     for(k in 1:nrow(transf_MI_ig_ind)) {
                         adduct_ij <- mat_char[transf_MI_ig_ind[k, "row"], ind_j]
-                        if (adduct_ij != mat_char[transf_MI_ig_ind[k, "row"], i]) {
-                            if (i == 9 & ind_j == 2) {print(j); break()}
+                        if (adduct_ij != mat_char[M[[i]][transf_MI_ig_ind[k, "row"]], i]) {
                             mat_num[ind_j, i] <- 0
                         }
                     } 
                 }
             }
             } else {
-                
                 mat_num[transf_M_ig_ind, i] <- 0
             }
         }
