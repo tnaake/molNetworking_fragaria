@@ -281,7 +281,7 @@ removeFalsLinksCircular <- function(mat_l) {
     
 }
 
-mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf))
+mat_rem <- removeFalseLinksAdducts(list(mat_1, mat_1_transf)) 
 mat_rem <- removeFalsLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
