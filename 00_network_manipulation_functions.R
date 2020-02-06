@@ -331,101 +331,111 @@ removeFalseLinksCircular2 <- function(mat_l) {
     mat_num <- mat_l[[1]]
     mat_char <- mat_l[[2]]
     
-    ## first find relations with adducts: 
-    ## (molecular ion suppose this is the vertex that has no ingoing adduct_ link)
-    ## i.e. the column of M does not have a "adduct_"
+    ## find relations with adducts: 
+    ## Molecular ion (MI): suppose this is the vertex that has no ingoing 
+    ## adduct_ link, i.e. the column of M does not have a "adduct_"
     M <- apply(mat_char, 2, grep, pattern = "adduct_")
     
-    ## iterate through M where M is not integer(0) --> these are adducts of
+    ## iterate through M where M is not integer(0). These are adducts of
     ## the rows i 
     for (i in seq_len(length(M))) {
         
         if (length(M[[i]])) {
-            ## if length(M[[i]]) != 0, M[[i]] is not the molecular ion:
-            ## 1) --> check if it has transf_
+            ## if length(M[[i]]) != 0, M[[i]] is not the MI:
+            ## check if the MI has transf_
             transf_M_og_ind <- grep(mat_char[i, ], pattern = "transf_")
-            transf_M_og <- mat_char[i, transf_M_og_ind]
             transf_M_ig_ind <- grep(mat_char[, i], pattern = "transf_")
-            transf_M_ig <- mat_char[transf_M_ig_ind, i]
-            
-            print(i)
-            ## check only outgoing links now 
-           
-            mat_char[M[[i]], ] ## adduct relation MI to M
             
             if (length(transf_M_og_ind)) {
-                mat_char[i, ] ## outgoing links of M
-                mat_char[M[[i]], ] ## outgoing links of MI
                 
-                tmp <- matrix(mat_char[M[[i]], ], byrow = FALSE, ncol = ncol(mat_char))
-                ## 2) check if the molecular ion has transf_ 
-                transf_MI_og_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
+                ## check if the MI has outgoing transf_ links and return the 
+                ## indices
+                tmp <- matrix(mat_char[M[[i]], ], byrow = FALSE, 
+                    ncol = ncol(mat_char))
+                transf_MI_og_ind <- apply(tmp, 2, grepl, pattern = "transf_")
                 transf_MI_og_ind <- which(transf_MI_og_ind, arr.ind = TRUE)
                 
                 if (length(transf_MI_og_ind)) {
-                ## iterate thorough all transf_M_og_ind --> check if
-                for(j in 1:length(transf_M_og_ind)) {
-                    ind_j <- transf_M_og_ind[j]
-                    if (!is.matrix(transf_MI_og_ind)) {
-                        for (k in 1:length(transf_MI_og_ind)) {
-                            adduct_ij <- mat_char[transf_MI_og_ind[k], ind_j]
-                            if (adduct_ij != mat_char[M[[i]], i]) {
-                                ## remove link transf_M_og_ind[j] at row i
-                                mat_num[i, ind_j] <- 0
-                            }   
-                        }
-                    } else {
-                        for(k in 1:nrow(transf_MI_og_ind)) {
-                            adduct_ij <- mat_char[transf_MI_og_ind[k, "row"], ind_j]
-                            if (adduct_ij != mat_char[i, M[[i]][transf_MI_og_ind[k, "row"]]]) {
-                                mat_num[i, ind_j] <- 0
+                    ## iterate thorough all transf_M_og_ind (outgoing links 
+                    ## from M) 
+                    for(j in 1:length(transf_M_og_ind)) {
+                        ind_j <- transf_M_og_ind[j]
+                        ## if there is only one MI do
+                        if (!is.matrix(transf_MI_og_ind)) {
+                            for (k in 1:length(transf_MI_og_ind)) {
+                                ## get adduct of M
+                                adduct_ij <- mat_char[transf_MI_og_ind[k], ind_j]
+                                if (adduct_ij != mat_char[M[[i]], i]) {
+                                    ## remove link transf_M_og_ind[k] at row i
+                                    mat_num[i, ind_j] <- 0
+                                }   
                             }
-                        } 
-                    }
-                }
-                } else {
-                    #if (i == 2 & transf_M_ig_ind == 9) {break()}
-                    #mat_num[i, transf_M_ig_ind] <- 0   
-                }
-            }
-        ## check only ingoing links now
-        if (length(transf_M_ig_ind)) {
-            mat_char[, i] ## ingoing links to M
-            mat_char[, M[[i]]] ## ingoing links of MI
-            
-            tmp <- matrix(mat_char[, M[[i]]], byrow = TRUE, ncol = ncol(mat_char))
-            ## 2) check if the molecular ion has transf_ 
-            transf_MI_ig_ind <- apply(tmp, 2, grepl, pattern = "transf_") ## outgoing transf links from molecular ions
-            transf_MI_ig_ind <- which(transf_MI_ig_ind, arr.ind = TRUE)
-            
-            if (length(transf_MI_ig_ind)) {
-            ## iterate thorough all transf_M_og_ind --> check if
-            for(j in 1:length(transf_M_ig_ind)) {
-                ind_j <- transf_M_ig_ind[j]
-                if (!is.matrix(transf_MI_ig_ind)) {
-                    for (k in 1:length(transf_MI_ig_ind)) {
-                        adduct_ij <- mat_char[transf_MI_ig_ind[k], ind_j]
-                        if (adduct_ij != mat_char[M[[i]], i]) {
-                            ## remove link transf_M_ig_ind[j] at row i
-                            mat_num[ind_j, i] <- 0
-                        }   
-                    }
-                } else {
-                    for(k in 1:nrow(transf_MI_ig_ind)) {
-                        adduct_ij <- mat_char[transf_MI_ig_ind[k, "row"], ind_j]
-                        if (adduct_ij != mat_char[M[[i]][transf_MI_ig_ind[k, "row"]], i]) {
-                            mat_num[ind_j, i] <- 0
+                        ## if there are several MI do
+                        } else {
+                            for(k in 1:nrow(transf_MI_og_ind)) {
+                                ## get adduct of M
+                                adduct_ij <- mat_char[transf_MI_og_ind[k, "row"], ind_j]
+                                if (adduct_ij != mat_char[i, M[[i]][transf_MI_og_ind[k, "row"]]]) {
+                                    ## remove link transf_M_og_ind[k] at row i
+                                    mat_num[i, ind_j] <- 0
+                                }
+                            } 
                         }
-                    } 
+                    }
+                } else {
+                    ## remove all links by default when there is no outgoing
+                    ## transf_ from the MI
+                    mat_num[i, transf_M_ig_ind] <- 0   
                 }
             }
-            } else {
-                mat_num[transf_M_ig_ind, i] <- 0
+            ## check only ingoing links now
+            if (length(transf_M_ig_ind)) {
+            
+                ## check if the MI has ingoing transf_ links and return the 
+                ## indices
+                tmp <- matrix(mat_char[, M[[i]]], byrow = TRUE, 
+                ncol = ncol(mat_char))
+                transf_MI_ig_ind <- apply(tmp, 2, grepl, pattern = "transf_") 
+                transf_MI_ig_ind <- which(transf_MI_ig_ind, arr.ind = TRUE)
+            
+                if (length(transf_MI_ig_ind)) {
+                    ## iterate thorough all transf_M_ig_ind (ingoing links from
+                    ## M)
+                    for(j in 1:length(transf_M_ig_ind)) {
+                    
+                        ind_j <- transf_M_ig_ind[j]
+                        ## if there is only one MI do
+                        if (!is.matrix(transf_MI_ig_ind)) {
+                            for (k in 1:length(transf_MI_ig_ind)) {
+                                ## get adduct of M
+                                adduct_ij <- mat_char[transf_MI_ig_ind[k], ind_j]
+                                if (adduct_ij != mat_char[M[[i]], i]) {
+                                    ## remove link transf_M_ig_ind[j] at row ind_j
+                                    mat_num[ind_j, i] <- 0
+                                }   
+                            }
+                        ## if there are several MI do
+                        } else {
+                            for(k in 1:nrow(transf_MI_ig_ind)) {
+                                ## get adduct of M
+                                adduct_ij <- mat_char[transf_MI_ig_ind[k, "row"], ind_j]
+                                if (adduct_ij != mat_char[M[[i]][transf_MI_ig_ind[k, "row"]], i]) {
+                                    ## remove link transf_M_ig_ind[k] at row ind_j
+                                    mat_num[ind_j, i] <- 0
+                                }
+                            } 
+                        }
+                    }
+                } else {
+                    ## remove all links by default when there is no ingoing
+                    ## transf_ from the MI
+                    mat_num[transf_M_ig_ind, i] <- 0
+                }
             }
-        }
         }
     }
-    ## set mat_char to "" where mat_num == 0
+    
+    ## set mat_char to "" where mat_num == 0 (removes links in mat_char)
     mat_char[which(mat_num == 0)] <- ""
     
     return(list(mat_num, mat_char))
