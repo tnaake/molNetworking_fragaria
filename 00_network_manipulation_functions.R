@@ -228,14 +228,24 @@ removeFalseLinksAdducts <- function(mat_l) {
     return(list(mat_num, mat_char))
 }
 
-## delete ingoing isotopes/adducts to M if there is no circular relation from 
-## M to M+isot/adduct to M+transf to M+iso/adduct+trans, e.g. imagine
-## 1) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
-## from M+1 to another mass feature M2, but there is no link between M and M2-1,
-## then remove the link M+1 and M2
-## 2) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
-## from M+1 to another mass feature M, AND there is a link between M and M2-1,
-## then keep the the link M+1 and M2 (support that mass feature is a metabolite)
+
+#' @name removeFalseLinksCircular
+#' @title Delete in- and outgoing links based on their relation to the molecular
+#' ion
+#' @author Thomas Naake <thomasnaake@@googlemail.com>
+#' @description The function `removeFalseLinksCircular` deletes ingoing 
+#' and outgoing links of isotopes/adducts to M if there is no circular relation from 
+## M to M+isot/adduct to M+transf to M+iso/adduct+transformation.
+#' Example:
+#' 1) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
+#' from M+1 to another mass feature M2, but there is no link between M and M2-1,
+#' then remove the link M+1 and M2.
+#' 2) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
+#' from M+1 to another mass feature M, AND there is a link between M and M2-1,
+#' then keep the the link M+1 and M2 (support that mass feature is a metabolite)
+#' @details 
+#' @example 
+#' 
 removeFalseLinksCircular <- function(mat_l) {
     
     mat_num <- mat_l[[1]]
