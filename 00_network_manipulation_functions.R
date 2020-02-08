@@ -1,48 +1,66 @@
-library(igraph)
-
-
-## pos mode: isotopic+1, isotopic+2, isotopic+3, Na adduct, K adduct, 
-## formic acid adduct
-## neg mode: isotopic+1, isotopic+2, isotopic+3, formic acid, Na adduct,
-## Sodium formate 
-
-
-##          M1+H    M1+Na   M2+H    M2+Na   M3+H    M3+Na
-## M1+H     0       1       0       0       0       1       
-## M1+Na    0       0       0       0       0       0
-## M2+H     1       0       0       1       0       0
-## M2+Na    0       1       0       0       1       0
-## M3+H     0       1       0       0       0       1
-## M3+Na    0       0       0       0       0       0  
-
-# mat_test <- matrix(c(c(0, 1, 1, 0, 0, 1), ## M1+H
-#                      c(1, 0, 1, 1, 1, 1), ## M1+Na
-#                      c(1, 1, 0, 1, 0, 0), ## M2+H
-#                      c(0, 1, 1, 0, 1, 0), ## M2+Na
-#                      c(0, 1, 0, 1, 0, 1), ## M3+H
-#                      c(0, 1, 0, 0, 1, 0)), ## M3+Na
-#                    
-
- 
-
-## do for all components
-## iterate through rows
 #' @name removeFalseLinksAdducts
-#' @title
-#' @description node with outgoing transf link should not have outgoing adduct link when
-## the adduct-linking vertex has an ingoing adduct link of same type
-#' @details 
-#' Example: remove edges between M1+H and M2+Na, M3+H and M4+K, in general when there is 
-## a link between an adduct and a molecular ion based on the following rule
-
-## node with outgoing transf link should not have outgoing adduct link when
-## the adduct-linking vertex has a ingoing adduct link
-
-## node with ingoing transf link should not have ingoing adduct link when the 
-## adduct-linking vertex has an outgoing adduct link
+#'
+#' @title Remove false links based on adduct information
+#'
+#' @description 
+#' Node with outgoing `transf_` link should not have outgoing
+#' adduct link when the adduct-linking vertex has an ingoing adduct link of the
+#' same type. The function `removeFalseLinksAdducts` removes these links that
+#' have the links of this kind, e.g. a wrong link that is by change denoted 
+#' as a transformation, however the transformation is actually not a 
+#' transformation (the m/z difference is the effect of the difference in 
+#' isotopes + remaining mass difference). 
+#'
+#' @details
+#' An isotope adduct in this sense above is not an adduct, even though it is 
+#' codified as `adduct_isotopic`. All isotopes (`adduct_isotopic[1-3]``) will
+#' be ignored by `removeFalseLinksAdducts` to avoid that true links are removed.
+#' The user has to assure that isotopes have to be encoded as `adduct_isotopic`,
+#' otherwise it is possible that `removeFalseLinksAdducts` will delete true 
+#' links.
+#'
+#' The function `removeFalseLinksAdducts` will remove a link, when there is a
+#' transformation link (`transf_`) between an adduct and a molecular ion,
+#' e.g. `removeFalseLinksAdducts` removes edges between the mass features 
+#' 1) `M1+H` and `M2+Na`, or 
+#' 2) `M3+H` and `M4+K`,
+#' if there is a transformation link between `M1+H` and `M2+Na`, or `M3+H` and
+#' `M4+K`.
+#'
+#' The following rules are applied to remove the links:
+#'
+#' 1) A node with an outgoing `transf_` link should not have an outgoing adduct
+#' link, if the adduct-linking node has a ingoing adduct link.
+#' 2) A node with an ingoing `transf_` link should not have ingoing adduct link,
+#' if the adduct-linking vertex has an outgoing adduct link.
+#'
 #' @author Thomas Naake, <thomasnaake@@googlemail.com>
 #' @example
-#' 
+#' mat_1 <- matrix(c(
+#'     c(0, 1, 0, 0, 0, 1), ## M1+H
+#'     c(0, 0, 0, 0, 0, 0), ## M1+Na
+#'     c(1, 0, 0, 1, 0, 0), ## M2+H
+#'     c(0, 1, 0, 0, 0, 0), ## M2+Na
+#'     c(0, 1, 0, 0, 0, 1), ## M3+H
+#'     c(0, 0, 0, 0, 0, 0)), ## M3+Na
+#'     byrow = TRUE, ncol = 6, nrow = 6)
+#'
+#' ## transf_gluc_T denotes a true underlying transformation (glucosylation)
+#' ## transf_gluc_T denotes an incorrect underlying transformation 
+#' ## (glycosylation)
+#' mat_1_transf <- matrix(c(
+#'     c("",              "adduct_Na",     "", "",          "", "transf_gluc_F"),
+#'     c("",              "",              "", "",          "", ""), 
+#'     c("transf_gluc_T", "",              "", "adduct_Na", "", ""), 
+#'     c("",              "transf_gluc_T", "", "",          "", ""), 
+#'     c("",              "transf_gluc_F", "",  "",         "", "adduct_Na"),
+#'     c("",              "",              "", "",          "", "")), 
+#'     byrow = TRUE, ncol = 6, nrow = 6)
+#'     colnames(mat_1) <- c("M1+H", "M1+Na", "M2+H", "M2+Na", "M3+H", "M3+Na")
+#'     rownames(mat_1) <- colnames(mat_1)
+#'     rownames(mat_1_transf) <- colnames(mat_1_transf) <- colnames(mat_1)
+#'
+#' removeFalseLinksAdducts(list(mat_1, mat_1_transf))
 removeFalseLinksAdducts <- function(mat_l) {
     
     mat_num <- mat_l[[1]]
@@ -61,15 +79,15 @@ removeFalseLinksAdducts <- function(mat_l) {
             
             for (j in inds_row) {
                 cols_j <- mat_char[, j]
-                adduct_j <- cols_j[grep(cols_j, pattern = "adduct")]
+                adduct_j <- cols_j[grep(cols_j, pattern = "adduct_")]
+                adduct_j <- adduct_j[-grep(adduct_j, pattern = "duct_isotopic")]
                 if (length(adduct_j) > 0)
                     if (any(adduct_j %in% adduct_i)) {
-                        mat_num[i, j] <- 0 ## remove in mat_test[i, ]
+                        mat_num[i, j] <- 0 ## remove in mat_num[i, j]
                     }
             }
         }
         
-        ## new 
         cols_i <- mat_char[, i]
         adduct_i <- cols_i[grep(cols_i, pattern = "adduct_")]
         
@@ -82,9 +100,10 @@ removeFalseLinksAdducts <- function(mat_l) {
             for (j in inds_col) {
                 rows_j <- mat_char[j, ]
                 adduct_j <- rows_j[grep(rows_j, pattern = "adduct")]
+                adduct_j <- adduct_j[-grep(adduct_j, pattern = "duct_isotopic")]
                 if (length(adduct_j) > 0)
                     if (any(adduct_j %in% adduct_i)) {
-                        mat_num[j, i] <- 0 ## remove in mat_test[i, ]
+                        mat_num[j, i] <- 0 ## remove in mat_num[j, i]
                     }
             }
         }
@@ -97,24 +116,58 @@ removeFalseLinksAdducts <- function(mat_l) {
     return(list(mat_num, mat_char))
 }
 
-
 #' @name removeFalseLinksCircular
-#' @title Delete in- and outgoing links based on their relation to the molecular
+#' @title Remove in- and outgoing links based on their relation to the molecular
 #' ion
-#' @description The function `removeFalseLinksCircular` deletes ingoing 
-#' and outgoing links of isotopes/adducts to M if there is no circular relation from 
-## M to M+isot/adduct to M+transf to M+iso/adduct+transformation.
-#' Example:
-#' 1) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
+#'
+#' @description
+#' The function `removeFalseLinksCircular` deletes ingoing 
+#' and outgoing links of isotopes/adducts to M if there is no circular 
+#' relation from the molecular ion M to M+isotope/adduct to M+transf to 
+#' M+iso/adduct+transformation.
+#' 
+#' @details
+#' Examples:
+#' 1) M and M+1 forming an `adduct_isotopic+1`, suppose there is a `transf_+162`
 #' from M+1 to another mass feature M2, but there is no link between M and M2-1,
 #' then remove the link M+1 and M2.
-#' 2) M and M+1 forming an "adduct_isotope+1", suppose there is a "transf_+162"
+#'
+#' 2) M and M+1 forming an `adduct_isotopic+1`, suppose there is a `transf_+162`
 #' from M+1 to another mass feature M, AND there is a link between M and M2-1,
 #' then keep the the link M+1 and M2 (support that mass feature is a metabolite)
-#' @details 
+#'
 #' @author Thomas Naake <thomasnaake@@googlemail.com>
-#' @example 
+#'
+#' @example
+#' mat_2 <- matrix(c(
+#'     c(0, 1, 1, 0, 1, 0, 0, 0, 0),
+#'     c(0, 0, 1, 1, 0, 0, 0, 1, 0),
+#'     c(0, 0, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 0, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 0, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 1, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 1, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 0, 0, 0, 0, 0, 0, 0, 0),
+#'     c(0, 0, 1, 0, 0, 0, 0, 0, 0)),
+#'     byrow = TRUE, ncol = 9, nrow = 9)
+#'     
+#' mat_2_transf <- matrix(c(
+#'     c("", "adduct_isotopic+1", "adduct_isotopic+2", "",          "transf_152", "", "", "",           ""),
+#'     c("", "",                  "adduct_isotopic+1", "transf_45", "",           "", "", "transf_152", ""),
+#'     c("", "",                  "",                  "",          "",           "", "", "",           ""),
+#'     c("", "",                  "",                  "",          "",           "", "", "",           ""),
+#'     c("", "",                  "",                  "",          "",           "", "", "",           ""),
+#'     c("", "transf_152",        "",                  "",          "",           "", "", "",           ""),
+#'     c("", "transf_152",        "",                  "",          "",           "", "", "",           ""),
+#'     c("", "",                  "",                  "",          "",           "", "", "",           ""),
+#'     c("", "",                  "transf_152",        "",          "",           "", "", "",           "")),
+#'     byrow = TRUE, ncol = 9, nrow = 9)
+#' colnames(mat_2) <- c("M_1", "M+1_1", "M+2_1", "M+1+45_1", 
+#'     "M+152_2", "M+1-152_3", "M+1-152_4", "M+1+152_5", "M+2-152_6")
+#' rownames(mat_2) <- colnames(mat_2)
+#' colnames(mat_2_transf) <- rownames(mat_2_transf) <- colnames(mat_2)
 #' 
+#' removeFalseLinksCircular(list(mat_2, mat_2_transf)) 
 removeFalseLinksCircular <- function(mat_l) {
     
     mat_num <- mat_l[[1]]
@@ -126,7 +179,7 @@ removeFalseLinksCircular <- function(mat_l) {
     M <- apply(mat_char, 2, grep, pattern = "adduct_")
     
     ## iterate through M where M is not integer(0). These are adducts of
-    ## the rows i 
+    ## the rows i
     for (i in seq_len(length(M))) {
         
         if (length(M[[i]])) {
@@ -242,5 +295,4 @@ removeFalseLinksCircular <- function(mat_l) {
     mat_char[which(mat_num == 0)] <- ""
     
     return(list(mat_num, mat_char))
-    
 }
