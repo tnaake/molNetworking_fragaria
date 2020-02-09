@@ -123,7 +123,7 @@ mat_5 <- matrix(c(
     c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0), ##"M+1+152_2"
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+2_2"
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0), ## "M+2+45_6"
-    c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)), ## "M-152-45_7"            
+    c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)), ## "M-152-45_7"
     byrow = TRUE, ncol = 11, nrow = 11)
 mat_5_transf <- matrix(c(
     c("",           "adduct_isotopic+1", "adduct_isotopic+2", "transf_45", "transf_152", "",          "", "",                  "",                  "",                  ""), ## "M_1"
@@ -193,10 +193,10 @@ mat_res_num_1 <- matrix(c(
     byrow = TRUE, ncol = 6, nrow = 6)
 
 mat_res_char_1 <- matrix(c(
-    c("",              "adduct_Na",     "",   "",          "",   ""),         
-    c("",              "",              "",   "",          "",   ""),         
-    c("transf_gluc_T", "",              "",   "adduct_Na", "",   ""),         
-    c("",              "transf_gluc_T", "",   "",          "",   ""),       
+    c("",              "adduct_Na",     "",   "",          "",   ""),
+    c("",              "",              "",   "",          "",   ""),
+    c("transf_gluc_T", "",              "",   "adduct_Na", "",   ""),
+    c("",              "transf_gluc_T", "",   "",          "",   ""),
     c("",              "",              "",   "",          "",   "adduct_Na"),
     c("",              "",              "",   "",          "",   "")),
     byrow = TRUE, ncol = 6, nrow = 6)
@@ -225,14 +225,14 @@ mat_res_num_2 <- matrix(c(
     byrow = TRUE, ncol = 9, nrow = 9)
 
 mat_res_char_2 <- matrix(c(
-    c("", "adduct_isotopic+1", "adduct_isotopic+2", "", "transf_152", "", "", "", ""), 
-    c("", "",                  "adduct_isotopic+1", "", "",           "", "", "", ""),   
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
-    c("", "",                  "",                  "", "",           "", "", "", ""),     
+    c("", "adduct_isotopic+1", "adduct_isotopic+2", "", "transf_152", "", "", "", ""),
+    c("", "",                  "adduct_isotopic+1", "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
+    c("", "",                  "",                  "", "",           "", "", "", ""),
     c("", "",                  "",                  "", "",           "", "", "", "")),
     byrow = TRUE, ncol = 9, nrow = 9)
 
@@ -246,8 +246,8 @@ mat_rem <- removeFalseLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_3), mode = "directed")
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
-## should result in links M_1->M+1_1, M_1->M+2_1, M+1_1->M+2_1, 
-## M+152_2->M+1+152_2, M+152_2->M+2+152_2, M+1+152_2->M+2+152_2, M_1->M+152_2, 
+## should result in links M_1->M+1_1, M_1->M+2_1, M+1_1->M+2_1,
+## M+152_2->M+1+152_2, M+152_2->M+2+152_2, M+1+152_2->M+2+152_2, M_1->M+152_2,
 ## M+1_1->M+1+152_2, M+2_1->M+2+152_2
 mat_res_num_3 <- matrix(c(
     c(0, 1, 1, 0, 1, 0, 0, 0, 0),
@@ -261,13 +261,13 @@ mat_res_num_3 <- matrix(c(
     c(0, 0, 0, 0, 0, 0, 0, 0, 0)),
     byrow = TRUE, ncol = 9, nrow = 9)
 mat_res_char_3 <- matrix(c(
-    c("", "adduct_isotopic+1", "adduct_isotopic+2", "", "transf_152", "", "", "",                 ""),      
-    c("", "",                  "adduct_isotopic+1", "", "",           "", "", "transf_152",       ""),          
+    c("", "adduct_isotopic+1", "adduct_isotopic+2", "", "transf_152", "", "", "",                 ""),
+    c("", "",                  "adduct_isotopic+1", "", "",           "", "", "transf_152",       ""),
     c("", "",                  "",                  "", "",           "", "", "",                 "transf_152"),
     c("", "",                  "",                  "", "",           "", "", "",                  ""),
     c("", "",                  "",                  "", "",           "", "", "adduct_isotopic+1", "adduct_isotopic+2"),
-    c("", "",                  "",                  "", "",           "", "", "",                  ""),       
-    c("", "",                  "",                  "", "",           "", "", "",                  ""),        
+    c("", "",                  "",                  "", "",           "", "", "",                  ""),
+    c("", "",                  "",                  "", "",           "", "", "",                  ""),
     c("", "",                  "",                  "", "",           "", "", "",                  "adduct_isotopic+1"),
     c("", "",                  "",                  "", "",           "", "", "",                  "")),
     byrow = TRUE, ncol = 9, nrow = 9)
@@ -282,8 +282,8 @@ mat_rem <- removeFalseLinksCircular(mat_rem)
 plot(graph_from_adjacency_matrix(mat_4), mode = "directed")
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
-## should result in M_1->M+1_1, M_1->M+2_1, M+1_1->M+2_1, M+152_2->M+1+152_2, 
-## M+152_2->M+2+152_2, M+1+152_2->M+2+152_2, M_1->M+152_2, M+1_1->M+1+152_2, 
+## should result in M_1->M+1_1, M_1->M+2_1, M+1_1->M+2_1, M+152_2->M+1+152_2,
+## M+152_2->M+2+152_2, M+1+152_2->M+2+152_2, M_1->M+152_2, M+1_1->M+1+152_2,
 ## M+2_1->M+2+152_2, M_1->M+45_5, M-152_3->M_1
 mat_res_num_4 <- matrix(c(
     c(0, 1, 1, 1, 1, 0, 0, 0, 0),
@@ -304,7 +304,7 @@ mat_res_char_4 <- matrix(c(
     c("",           "",                  "",                  "",          "",           "", "", "",                  ""),
     c("",           "",                  "",                  "",          "",           "", "", "adduct_isotopic+1", "adduct_isotopic+2"),
     c("transf_152", "",                  "",                  "",          "",           "", "", "",                  ""),
-    c("",           "",                  "",                  "",          "",           "", "", "",                  ""),        
+    c("",           "",                  "",                  "",          "",           "", "", "",                  ""),
     c("",           "",                  "",                  "",          "",           "", "", "",                  "adduct_isotopic+1"),
     c("",           "",                  "",                  "",          "",           "", "", "",                  "")),
     byrow = TRUE, ncol = 9, nrow = 9)
@@ -330,7 +330,7 @@ mat_res_num_5 <- matrix(c(
     c(0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0),
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
     c(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0),
-    c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)), 
+    c(0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0)),
     byrow = TRUE, ncol = 11, nrow = 11)
 
 mat_res_char_5 <- matrix(c(
