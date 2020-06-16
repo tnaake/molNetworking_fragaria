@@ -1,7 +1,7 @@
 ## load igraph for visualization
 library(igraph)
 
-## define test examples
+# define test examples
 ## example 1
 mat_1 <- matrix(c(
     c(0, 1, 0, 0, 0, 1), ## M1+H
@@ -177,9 +177,12 @@ plot(net_mat_6)
 ## apply functions and perform tests
 ## example 1
 mat_l <- list(mat_1, mat_1_transf)
+mat_rem <- removeFalseLinksCircular(mat_l)
+mat_rem <- removeFalseLinksAdducts(mat_rem)
+plot(graph_from_adjacency_matrix(mat_l[[1]], mode = "directed"))
+plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 mat_rem <- removeFalseLinksAdducts(mat_l)
 mat_rem <- removeFalseLinksCircular(mat_rem)
-plot(graph_from_adjacency_matrix(mat_l[[1]], mode = "directed"))
 plot(graph_from_adjacency_matrix(mat_rem[[1]], mode = "directed"))
 
 ## should result in M1+H->M1+Na, M2+H->M2+Na, M2+H->M1+H, M2+Na->M1+Na, M3+H->M3+Na
@@ -201,6 +204,7 @@ mat_res_char_1 <- matrix(c(
     c("",              "",              "",   "",          "",   "")),
     byrow = TRUE, ncol = 6, nrow = 6)
 
+library(testthat)
 expect_true(all(mat_rem[[1]] == mat_res_num_1))
 expect_true(all(mat_rem[[2]] == mat_res_char_1))
 
