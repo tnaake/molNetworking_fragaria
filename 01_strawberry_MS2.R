@@ -34,6 +34,14 @@ simMat_pos_ref <- compare_Spectra(spectra_pos_ref,
 simMat_neg_ref <- compare_Spectra(spectra_neg_ref, 
     fun = normalizeddotproduct, binSize = 0.01)
 
+## rename cols and rows of the similarity matrices
+colnames(simMat_pos_ref) <- rownames(simMat_pos_ref) <- 
+    paste(spectra_pos_ref@elementMetadata$precursorMz, 
+          spectra_pos_ref@elementMetadata$rt, sep = "_")
+colnames(simMat_neg_ref) <- rownames(simMat_neg_ref) <- 
+    paste(spectra_neg_ref@elementMetadata$precursorMz, 
+          spectra_neg_ref@elementMetadata$rt, sep = "_")
+
 ## save the objects
 save(aln_pos_ref, aln_neg_ref, 
      file = "MS2_data/01_MS2_reference_spectrum_pos_neg.RData")
@@ -41,5 +49,11 @@ save(spl_pos_ref, spl_neg_ref,
      file = "MS2_data/01_MS2_spectrum_list_reference_pos_neg.RData")
 save(spectra_pos_ref, spectra_neg_ref,
      file = "MS2_data/01_MS2_spectra_reference_pos_neg.RData")
-save(simMat_pos_ref, simMat_pos_ref, 
+save(simMat_pos_ref, simMat_neg_ref, 
      file = "MS2_data/01_MS2_similarityMatrix_reference_pos_neg.RData")
+
+## create the network
+
+library(igraph)
+g_pos <- graph_from_adjacency_matrix(simMat_pos_ref, weighted = TRUE)
+g_neg <- graph_from_adjacency_matrix(simMat_neg_ref, weighted = TRUE)
