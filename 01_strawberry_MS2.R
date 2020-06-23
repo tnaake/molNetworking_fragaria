@@ -53,7 +53,14 @@ save(simMat_pos_ref, simMat_neg_ref,
      file = "MS2_data/01_MS2_similarityMatrix_reference_pos_neg.RData")
 
 ## create the network
-
 library(igraph)
 g_pos <- graph_from_adjacency_matrix(simMat_pos_ref, weighted = TRUE)
 g_neg <- graph_from_adjacency_matrix(simMat_neg_ref, weighted = TRUE)
+
+pdf("network_ms2_g_pos.pdf")
+plot(g_pos)
+dev.off()
+
+pdf("network_ms2_g_neg.pdf")
+plot(g_neg)
+dev.off()
