@@ -216,7 +216,6 @@ plot(pca$rotation[, 1], pca$rotation[, 2])
 text(x = pca$rotation[, 1], y = pca$rotation[, 2], labels = rownames(pca$rotation))
 dev.off()
 
-
 write.table(peaklist_pos, file = "strawberry_peaklist_pos.csv", quote = FALSE, sep = "\t")
 write.table(peaklist_neg, file = "strawberry_peaklist_neg.csv", quote = FALSE, sep = "\t")
 
@@ -238,7 +237,19 @@ peaklist_neg[peaklist_neg[, "mz"] < 447.11 & peaklist_neg[, "mz"] > 447.08, c(1,
 peaklist_neg[peaklist_neg[, "mz"] < 509.14 & peaklist_neg[, "mz"] > 509.12, c(1,4, 164:165)] ## cyanidin 3 O glucoside
 peaklist_neg[peaklist_neg[, "mz"] < 447.11 & peaklist_neg[, "mz"] > 447.08, c(1,4,164:165)]
 
-
+## create peaklist for W, G, R
+cols_W <- colnames(peaklist_pos)[grep(colnames(peaklist_pos), pattern = "_W1_|_W2_|_W3_")]
+peaklist_pos_W <- peaklist_pos[, c("mz", "rt", cols_W)]
+cols_W <- colnames(peaklist_neg)[grep(colnames(peaklist_neg), pattern = "_W1_|_W2_|_W3_")]
+peaklist_neg_W <- peaklist_neg[, c("mz", "rt", cols_W)]
+cols_G <- colnames(peaklist_pos)[grep(colnames(peaklist_pos), pattern = "_G1_|_G2_|_G3_")]
+peaklist_pos_G <- peaklist_pos[, c("mz", "rt", cols_G)]
+cols_G <- colnames(peaklist_neg)[grep(colnames(peaklist_neg), pattern = "_G1_|_G2_|_G3_")]
+peaklist_neg_G <- peaklist_neg[, c("mz", "rt", cols_G)]
+cols_R <- colnames(peaklist_pos)[grep(colnames(peaklist_pos), pattern = "_R1_|_R2_|_R3_")]
+peaklist_pos_R <- peaklist_pos[, c("mz", "rt", cols_R)]
+cols_R <- colnames(peaklist_neg)[grep(colnames(peaklist_neg), pattern = "_R1_|_R2_|_R3_")]
+peaklist_neg_R <- peaklist_neg[, c("mz", "rt", cols_R)]
 
 ## create data.frame with transformations
 transformations <- rbind(
@@ -286,13 +297,37 @@ transformations <- rbind(
     c("transf_ellagic acid (-H2O)", "	C14H4O7", 283.995705, "?")) ## log Kow=-2.05 (ellagic acid, Pubchem) --> -
     ##c("putrescine to spermidine (+C3H7N)", "C3H7N", 57.0578492299, "?"))
 
-## check within each pcgroup, mass differences with respect to the molecular ion
-adducts <- rbind(
-    c("adduct_formic acid adduct", "CH2O2",  46.0054792, "?"),
-    c("adduct_chlorine adduct", "Cl", 34.968853, "?"),
+## check within each pcgroup, mass differences with respect to the M+H
+adducts_pos <- rbind(
+    c("adduct_formic acid adduct", "CH2O2",  46.0054792, "?"), ## only positive
+    c("adduct_ammonium", "NH4-H", 18.034374-1.007825, "?"),
+    c("adduct_acetonitril H+CH3CN", "CH3CN", 41.026549, "?"),
+    c("adduct_acetonitril H+CH3CN+1H2O", "CH3CNH2O", 59.037113, "?"),
     c("adduct_sodium formate adduct", "NaHCO2", 67.9874246, "?"),
-    c("adduct_Na adduct (+Na-2H)", "Na-H", 21.98146, "?"),
-    c("adduct_K adduct (+K-2H)", "K-H", 37.9558834, "?"),
+    c("adduct_Na adduct (+Na+)", "Na-H", 22.989770-1.007825, "?"), ## only positive
+    c("adduct_K adduct (+K+)", "K-H", 38.963708-1.007825, "?"), ## only positive
+    c("adduct_isotopic+1_H", "isotopic peak 2H", 1.00628, "?"),
+    c("adduct_isotopic+2_15N-14N", "isotopic peak 15N-14N", 0.997035, "?"),
+    c("adduct_isotopic+2_18O-16O", "isotopic peak 18O-16O", 2.004244, "?"),
+    c("adduct_isotopic+2_34S-32S", "isotopic peak 34S-32S", 1.995796, "?"),
+    c("adduct_isotopic+1", "isotopic peak 13C1", 1.0033554, "?"),
+    c("adduct_isotopic+2", "isotopic peak 13C2", 2.0067108, "?"),
+    c("adduct_isotopic+3", "isotopic peak 13C3", 3.0100662, "?"),
+    c("adduct_loss of deoxyhexose (e.g. Rhamnose)", "C6H10O4", -146.0579088094, "?"),
+    c("adduct_loss of hexose", "C5H10O5", -162.0528234315, "?"),
+    c("adduct_loss of pentose", "C5H8O4", -132.042260, "?"),
+    c("adduct_loss of malonyl group", "C3H2O3", -86.0003939305, "?"),
+    c("adduct_decarboxylation (loss from malonyl)", "CO2", -43.989830, "?"),
+    c("adduct_loss of water", "H2O", -18.010565, "?"), 
+    c("adduct_loss of COCH2", "COCH2", -42.0105646863, "?")
+)
+
+## check within each pcgroup, mass differences with respect to the M-H
+adducts_neg <- rbind(
+    c("adduct_formate HCOO-", "HCOO+H", 44.997654+1.007825, "?"),
+    c("adduct_chlorine adduct", "Cl+H", 34.968853+1.007825, "?"),
+    c("adduct_M-2H+Na", "Na-H", 22.989770-1.00782, "?"),
+    c("adduct_sodium formate adduct", "NaHCO2", 67.9874246, "?"),
     c("adduct_isotopic+1_H", "isotopic peak 2H", 1.00628, "?"),
     c("adduct_isotopic+2_15N-14N", "isotopic peak 15N-14N", 0.997035, "?"),
     c("adduct_isotopic+2_18O-16O", "isotopic peak 18O-16O", 2.004244, "?"),
@@ -309,23 +344,32 @@ adducts <- rbind(
     c("adduct_loss of COCH2", "COCH2", -42.0105646863, "?")
 )
 
+## positive mode
+transformations_pos <- data.frame(
+    group = c(adducts_pos[, 1], transformations[, 1]),
+    formula = c(adducts_pos[, 2], transformations[, 2]), 
+    mass = c(as.numeric(adducts_pos[, 3]), as.numeric(transformations[, 3])),
+    rt = c(adducts_pos[, 4], transformations[, 4]))
 
-transformations <- data.frame(group = c(adducts[, 1], transformations[, 1]),
-    formula = c(adducts[, 2], transformations[, 2]), 
-    mass = c(as.numeric(adducts[, 3]), as.numeric(transformations[, 3])),
-    rt = c(adducts[, 4], transformations[, 4]))
+## negative mode 
+transformations_neg <- data.frame(
+    group = c(adducts_neg[, 1], transformations[, 1]),
+    formula = c(adducts_neg[, 2], transformations[, 2]), 
+    mass = c(as.numeric(adducts_neg[, 3]), as.numeric(transformations[, 3])),
+    rt = c(adducts_neg[, 4], transformations[, 4]))
 
-## use function createStructuralAdjacency and remove false positives by function rtCorrection
+## use function createStructuralAdjacency and remove false positives by 
+## function rtCorrection
 ## pos
-struct_adj_pos <- structural(x = peaklist_pos, transformation = transformations,
-    ppm = 10, directed = TRUE)
+struct_adj_pos <- structural(x = peaklist_pos, 
+    transformation = transformations_pos, ppm = 10, directed = TRUE)
 struct_adj_pos <- rtCorrection(structural = struct_adj_pos, x = peaklist_pos, 
-    transformation = transformations)
+    transformation = transformations_pos)
 ## neg
-struct_adj_neg <- structural(x = peaklist_neg, transformation = transformations,
-    ppm = 10, directed = TRUE)
+struct_adj_neg <- structural(x = peaklist_neg, 
+    transformation = transformations_neg, ppm = 10, directed = TRUE)
 struct_adj_neg <- rtCorrection(structural = struct_adj_neg, x = peaklist_neg,
-    transformation = transformations)
+    transformation = transformations_neg)
 
 ## save
 save(struct_adj_pos, file = "MetNet_strawberry_struct_adj_pos.RData")
@@ -336,6 +380,26 @@ inds_pos <- which(colnames(peaklist_pos) == "X156_G1_pos"):which(colnames(peakli
 inds_neg <- which(colnames(peaklist_neg) == "X156_G1_neg"):which(colnames(peaklist_neg) == "Santa_Clara_W3_neg")
 peaklist_pos_cut <- peaklist_pos[, inds_pos]
 peaklist_neg_cut <- peaklist_neg[, inds_neg]
+inds_pos <- which(colnames(peaklist_pos_G) == "X156_G1_pos"):which(colnames(peaklist_pos_G) == "Santa_Clara_G3_pos")
+inds_neg <- which(colnames(peaklist_neg_G) == "X156_G1_neg"):which(colnames(peaklist_neg_G) == "Santa_Clara_G3_neg")
+peaklist_pos_G_cut <- peaklist_pos_G[, inds_pos]
+peaklist_neg_G_cut <- peaklist_neg_G[, inds_neg]
+inds_pos <- which(colnames(peaklist_pos_W) == "X156_W1_pos"):which(colnames(peaklist_pos_W) == "Santa_Clara_W3_pos")
+inds_neg <- which(colnames(peaklist_neg_W) == "X156_W1_neg"):which(colnames(peaklist_neg_W) == "Santa_Clara_W3_neg")
+peaklist_pos_W_cut <- peaklist_pos_W[, inds_pos]
+peaklist_neg_W_cut <- peaklist_neg_W[, inds_neg]
+inds_pos <- which(colnames(peaklist_pos_R) == "X156_R1_pos"):which(colnames(peaklist_pos_R) == "Santa_Clara_R3_pos")
+inds_neg <- which(colnames(peaklist_neg_R) == "X156_R1_neg"):which(colnames(peaklist_neg_R) == "Santa_Clara_R3_neg")
+peaklist_pos_R_cut <- peaklist_pos_R[, inds_pos]
+peaklist_neg_R_cut <- peaklist_neg_R[, inds_neg]
+
+## for G, W, R take only those metabolites that have sd > 0
+peaklist_pos_G_cut <- peaklist_pos_G_cut[apply(peaklist_pos_G_cut, 1, sd) > 0, ]
+peaklist_neg_G_cut <- peaklist_neg_G_cut[apply(peaklist_neg_G_cut, 1, sd) > 0, ]
+peaklist_pos_W_cut <- peaklist_pos_W_cut[apply(peaklist_pos_W_cut, 1, sd) > 0, ]
+peaklist_neg_W_cut <- peaklist_neg_W_cut[apply(peaklist_neg_W_cut, 1, sd) > 0, ]
+peaklist_pos_R_cut <- peaklist_pos_R_cut[apply(peaklist_pos_R_cut, 1, sd) > 0, ]
+peaklist_neg_R_cut <- peaklist_neg_R_cut[apply(peaklist_neg_R_cut, 1, sd) > 0, ]
 
 models <- c("pearson", "pearson_partial", "spearman", "spearman_partial", 
     "clr", "aracne", "randomForest")
@@ -350,41 +414,107 @@ stat_adj_neg <- statistical(as.matrix(peaklist_neg_cut), model = models,
 save(stat_adj_pos, file = "MetNet_strawberry_stat_adj_pos.RData")
 save(stat_adj_neg, file = "MetNet_strawberry_stat_adj_neg.RData")
 
+## G, W, R
+stat_adj_pos_G <- statistical(as.matrix(peaklist_pos_G_cut), model = models, 
+    correlation_adjust = "BH") 
+stat_adj_neg_G <- statistical(as.matrix(peaklist_neg_G_cut), model = models, 
+    correlation_adjust = "BH")
+stat_adj_pos_W <- statistical(as.matrix(peaklist_pos_W_cut), model = models, 
+    correlation_adjust = "BH") 
+stat_adj_neg_W <- statistical(as.matrix(peaklist_neg_W_cut), model = models, 
+    correlation_adjust = "BH")
+stat_adj_pos_R <- statistical(as.matrix(peaklist_pos_R_cut), model = models, 
+    correlation_adjust = "BH") 
+stat_adj_neg_R <- statistical(as.matrix(peaklist_neg_R_cut), model = models, 
+    correlation_adjust = "BH")
+
+save(stat_adj_pos_G, stat_adj_pos_W, stat_adj_pos_R, file = "MetNet_strawberry_stat_adj_pos_GWR.RData")
+save(stat_adj_neg_G, stat_adj_neg_W, stat_adj_neg_R, file = "MetNet_strawberry_stat_adj_neg_GWR.RData")
+
+## how to set thresholds? use flavonoids, ellagitannins/ellagic acids and 
+## hydroxycinnamic acids as benchmark
+## (all negative ionization mode)
+## quercetin dihexose m/z 625.1596 (rt: 372.06, 376.836, 381.684, 423.684)
+tmp <- c("625.175/371.73_26443", "625.144/372.55_20414", "625.175/377.54_16692",
+    "625.123/382.33_14256", "625.144/423.85_25837")
+## kaempferol hexose m/z 447.0930 (rt: 302.04, 330.78, 462.9)
+tmp <- c(tmp, "447.092/302.96_21354", "447.097/331.72_15038", 
+    "447.091/463.22_10806", "447.053/463.83_10811")
+## kaempferol glucuronide m/z 461.072 (rt: 463.09, 471.3)
+tmp <- c(tmp, "461.076/463.44_10806", "461.076/471.67_24", "461.03/471.65_4290")
+## quercitin glucuronide m/z 477.0690 (rt: 426.3960)
+tmp <- c(tmp, "477.018/426.75_4128", "477.067/426.74_4054")
+## isorhamnetin glucuronide m/z 491.0840 (rt: 476.4600)
+tmp <- c(tmp, "491.083/476.87_14473")
+## quercetin hexose m/z 463.0892 (rt: 428.0700)
+tmp <- c(tmp, "463.089/428.34_27")
+quantile(unique(stat_adj_neg[[1]][tmp, tmp]), 0.25, na.rm = TRUE) ## rf: 2.53e-06
+quantile(unique(stat_adj_neg[[2]][tmp, tmp]), 0.25, na.rm = TRUE) ## clr: 0
+quantile(unique(stat_adj_neg[[3]][tmp, tmp]), 0.25, na.rm = TRUE) ## aracne: 0
+quantile(unique(stat_adj_neg[[4]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson: 0.154
+quantile(unique(stat_adj_neg[[5]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson_part: 0.037
+quantile(unique(stat_adj_neg[[6]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman: 0.140
+quantile(unique(stat_adj_neg[[7]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman_part: 0.030
+
+## bis(HHDP) glucose m/z 784.0591 (rt: 342.65) --> nf
+## galloyl-HHDP-glucose m/z 633.0740 (rt: 305.64)
+tmp <- "633.071/305.64_19"
+## di-galloyl HHDP-glucose m/z 785.0830 (rt: 356.64)
+tmp <- c(tmp, "785.084/357.04_121")
+## ellagic acid deoxyhexose m/z 447.0570 (rt: 399.31, 405.96)
+tmp <- c(tmp, "447.059/399.51_10667", "447.059/406.75_11197")
+## ellagic acid m/z 300.999 (rt: 420.48)
+tmp <- c(tmp, "300.947/420.48_9056", "300.975/420.27_61")
+## galloyl-bis(HHDP)-glucose m/z 935.093 (rt: 369.77, 377.52, 404.90, 412.02)
+tmp <- c(tmp, "935.09/369.81_26", "935.07/374.66_20696", "935.07/404.63_12",
+    "935.09/412.7_18453")
+quantile(unique(stat_adj_neg[[1]][tmp, tmp]), 0.25, na.rm = TRUE) ## rf: 2.34e-06
+quantile(unique(stat_adj_neg[[2]][tmp, tmp]), 0.25, na.rm = TRUE) ## clr: 0
+quantile(unique(stat_adj_neg[[3]][tmp, tmp]), 0.25, na.rm = TRUE) ## aracne: 0
+quantile(unique(stat_adj_neg[[4]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson: 0.161
+quantile(unique(stat_adj_neg[[5]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson_part: 0.041
+quantile(unique(stat_adj_neg[[6]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman: 0.212
+quantile(unique(stat_adj_neg[[7]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman_part: 0.033
+
+## caffeic acid hexose m/z 341.1094 (rt: 297.82)
+tmp <- c("341.123/346.84_18251", "341.089/324.39_206", "341.089/297.82_22926") 
+## coumaric acid hexose m/z 325.0890 (rt: 311.46, 324.6)
+tmp <- c(tmp, "325.094/311.58_3788", "325.035/311.66_3788", 
+    "325.054/326.35_12890", "325.035/326.57_12871", "325.094/326.23_12871")
+## ferulic acid hexose m/z 355.1040 (rt: 334.2, 420.0, 444.12)
+tmp <- c(tmp, "355.037/444.35_2942", "355.069/324.69_206", 
+    "355.073/444.41_2851", "355.105/334.47_81", "355.105/420.41_9050",
+    "355.105/444.38_2851")
+## sinapic acid hexose derivative m/z 385.1511 (rt: 598.344, 676.308)
+tmp <- c(tmp, "385.151/598.24_24946", "385.152/675.97_26552")
+quantile(unique(stat_adj_neg[[1]][tmp, tmp]), 0.25, na.rm = TRUE) ## rf: 1.59e-06
+quantile(unique(stat_adj_neg[[2]][tmp, tmp]), 0.25, na.rm = TRUE) ## clr: 0.443
+quantile(unique(stat_adj_neg[[3]][tmp, tmp]), 0.25, na.rm = TRUE) ## aracne: 0
+quantile(unique(stat_adj_neg[[4]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson: 0.355
+quantile(unique(stat_adj_neg[[5]][tmp, tmp]), 0.25, na.rm = TRUE) ## pearson_part: 0.044
+quantile(unique(stat_adj_neg[[6]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman: 0.365
+quantile(unique(stat_adj_neg[[7]][tmp, tmp]), 0.25, na.rm = TRUE) ## spearman_part: 0.031
+
+## set the final values (min of the three sets)
+##rf: 1.5e-06
+##clr: 0.4 --> x% percentile from the complete set --> 34%
+##aracne: quantile(stat_adj_neg[[3]], 0.34, na.rm = TRUE) --> 0 --> 0.01
+##pearson: 0.15
+##pearson_part: 0.035
+##spearman: 0.14
+##spearman_part: 0.03
+
 ## optional: set links within a pc_group to NA for pearson*/spearman*,
 ## clr/aracne/bayes/randomForest to reduce unmeaningful links
-setLinkWithinPCgroupTo <- function(stat_adj, set_to) {
-    
-    if (is.list(stat_adj)) {
-        pc <- strsplit(rownames(stat_adj[[1]]), split = "_")    
-    } else {
-        pc <- strsplit(rownames(stat_adj), split = "_")    
-    }
-    
-    pc <- unlist(lapply(pc, "[", 2))
-    pc_u <- unique(pc)    
-    
-    for (i in 1:length(pc_u)) {
-        
-        ## get inds of colnames (identical to rownames) that are equal to pc_pos_u
-        inds <- pc == pc_u[i]
-        
-        ## iterate through each model and set to NaN
-        if (is.list(stat_adj)) {
-            for (j in 1:length(stat_adj)) {
-                stat_adj[[j]][inds, inds] <- set_to
-            }    
-        } else {
-            stat_adj[inds, inds] <- set_to
-        }
-        
-    }
-    
-    return(stat_adj)
-}
-
 ## apply function
 stat_adj_pos_NA <- setLinkWithinPCgroupTo(stat_adj_pos, set_to = NaN)
 stat_adj_neg_NA <- setLinkWithinPCgroupTo(stat_adj_neg, set_to = NaN)
+stat_adj_pos_G_NA <- setLinkWithinPCgroupTo(stat_adj_pos_G, set_to = NaN)
+stat_adj_neg_G_NA <- setLinkWithinPCgroupTo(stat_adj_neg_G, set_to = NaN)
+stat_adj_pos_W_NA <- setLinkWithinPCgroupTo(stat_adj_pos_W, set_to = NaN)
+stat_adj_neg_W_NA <- setLinkWithinPCgroupTo(stat_adj_neg_W, set_to = NaN)
+stat_adj_pos_R_NA <- setLinkWithinPCgroupTo(stat_adj_pos_R, set_to = NaN)
+stat_adj_neg_R_NA <- setLinkWithinPCgroupTo(stat_adj_neg_R, set_to = NaN)
 
 ## apply the function threshold to create unweighted adjacency matrices
 ## type = "threshold" 
@@ -445,102 +575,125 @@ pdf("hist_neg_randomForest.pdf")
 hist(stat_adj_neg_NA[["randomForest"]])
 dev.off()
 
-## check thresholds
-table(stat_adj_neg_NA[["pearson"]][upper.tri(stat_adj_neg_NA[["pearson"]])] > 0.75)
-table(stat_adj_pos_NA[["pearson"]][upper.tri(stat_adj_pos_NA[["pearson"]])] > 0.75)
-table(stat_adj_neg_NA[["pearson_partial"]][upper.tri(stat_adj_neg_NA[["pearson_partial"]])] > 0.5)
-table(stat_adj_pos_NA[["pearson_partial"]][upper.tri(stat_adj_pos_NA[["pearson_partial"]])] > 0.5)
-table(stat_adj_neg_NA[["spearman"]][upper.tri(stat_adj_neg_NA[["spearman"]])] > 0.75)
-table(stat_adj_pos_NA[["spearman"]][upper.tri(stat_adj_pos_NA[["spearman"]])] > 0.75)
-table(stat_adj_neg_NA[["spearman_partial"]][upper.tri(stat_adj_neg_NA[["spearman_partial"]])] > 0.5)
-table(stat_adj_pos_NA[["spearman_partial"]][upper.tri(stat_adj_pos_NA[["spearman_partial"]])] > 0.5)
-table(stat_adj_neg_NA[["clr"]][upper.tri(stat_adj_neg_NA[["clr"]])] > 2)
-table(stat_adj_pos_NA[["clr"]][upper.tri(stat_adj_pos_NA[["clr"]])] > 2)
-table(stat_adj_neg_NA[["aracne"]][upper.tri(stat_adj_neg_NA[["aracne"]])] > 0.05)
-table(stat_adj_pos_NA[["aracne"]][upper.tri(stat_adj_pos_NA[["aracne"]])] > 0.05)
-table(stat_adj_neg_NA[["randomForest"]][upper.tri(stat_adj_neg_NA[["randomForest"]])] > 0.001)
-table(stat_adj_pos_NA[["randomForest"]][upper.tri(stat_adj_pos_NA[["randomForest"]])] > 0.001)
 
-args <- list("pearson" = 0.75, "pearson_partial" = 0.5, "spearman" = 0.75,
-    "spearman_partial" = 0.5, "clr" = 2, "aracne" = 0.05, 
-    "randomForest" = 0.001, threshold = 1)
+## check thresholds
+table(stat_adj_neg_NA[["pearson"]][upper.tri(stat_adj_neg_NA[["pearson"]])] > 0.15)
+table(stat_adj_pos_NA[["pearson"]][upper.tri(stat_adj_pos_NA[["pearson"]])] > 0.15)
+table(stat_adj_neg_NA[["pearson_partial"]][upper.tri(stat_adj_neg_NA[["pearson_partial"]])] > 0.035)
+table(stat_adj_pos_NA[["pearson_partial"]][upper.tri(stat_adj_pos_NA[["pearson_partial"]])] > 0.035)
+table(stat_adj_neg_NA[["spearman"]][upper.tri(stat_adj_neg_NA[["spearman"]])] > 0.14)
+table(stat_adj_pos_NA[["spearman"]][upper.tri(stat_adj_pos_NA[["spearman"]])] > 0.14)
+table(stat_adj_neg_NA[["spearman_partial"]][upper.tri(stat_adj_neg_NA[["spearman_partial"]])] > 0.03)
+table(stat_adj_pos_NA[["spearman_partial"]][upper.tri(stat_adj_pos_NA[["spearman_partial"]])] > 0.03)
+table(stat_adj_neg_NA[["clr"]][upper.tri(stat_adj_neg_NA[["clr"]])] > 0.4)
+table(stat_adj_pos_NA[["clr"]][upper.tri(stat_adj_pos_NA[["clr"]])] > 0.4)
+table(stat_adj_neg_NA[["aracne"]][upper.tri(stat_adj_neg_NA[["aracne"]])] > 0.01)
+table(stat_adj_pos_NA[["aracne"]][upper.tri(stat_adj_pos_NA[["aracne"]])] > 0.01)
+table(stat_adj_neg_NA[["randomForest"]][upper.tri(stat_adj_neg_NA[["randomForest"]])] > 1.5e-06)
+table(stat_adj_pos_NA[["randomForest"]][upper.tri(stat_adj_pos_NA[["randomForest"]])] > 1.5e-06)
+
+args <- list("pearson" = 0.15, "pearson_partial" = 0.035, "spearman" = 0.14,
+    "spearman_partial" = 0.03, "clr" = 0.4, "aracne" = 0.01, 
+    "randomForest" = 1.5e-06, threshold = 1)
 stat_adj_pos_thr <- threshold(statistical = stat_adj_pos_NA, type = "threshold",
     args = args)
 stat_adj_neg_thr <- threshold(statistical = stat_adj_neg_NA, type = "threshold",
     args = args)
- 
+stat_adj_pos_G_thr <- threshold(statistical = stat_adj_pos_G_NA, type = "threshold",
+    args = args)
+stat_adj_neg_G_thr <- threshold(statistical = stat_adj_neg_G_NA, type = "threshold",
+    args = args)
+stat_adj_pos_W_thr <- threshold(statistical = stat_adj_pos_W_NA, type = "threshold",
+    args = args)
+stat_adj_neg_W_thr <- threshold(statistical = stat_adj_neg_W_NA, type = "threshold",
+    args = args)
+stat_adj_pos_R_thr <- threshold(statistical = stat_adj_pos_R_NA, type = "threshold",
+    args = args)
+stat_adj_neg_R_thr <- threshold(statistical = stat_adj_neg_R_NA, type = "threshold",
+    args = args)
+
+
 ## type = "top1" 
 args_top <- list(n = 500000)
-stat_adj_pos_top1 <- threshold(statistical = stat_adj_pos, type = "top1",
+stat_adj_pos_top1 <- threshold(statistical = stat_adj_pos_NA, type = "top1",
     args = args_top)
-stat_adj_neg_top1 <- threshold(statistical = stat_adj_neg, type = "top1",
+stat_adj_neg_top1 <- threshold(statistical = stat_adj_neg_NA, type = "top1",
+    args = args_top)
+stat_adj_pos_G_top1 <- threshold(statistical = stat_adj_pos_G_NA, type = "top1",
+    args = args_top)
+stat_adj_neg_G_top1 <- threshold(statistical = stat_adj_neg_G_NA, type = "top1",
+    args = args_top)
+stat_adj_pos_W_top1 <- threshold(statistical = stat_adj_pos_W_NA, type = "top1",
+    args = args_top)
+stat_adj_neg_W_top1 <- threshold(statistical = stat_adj_neg_W_NA, type = "top1",
+    args = args_top)
+stat_adj_pos_R_top1 <- threshold(statistical = stat_adj_pos_R_NA, type = "top1",
+    args = args_top)
+stat_adj_neg_R_top1 <- threshold(statistical = stat_adj_neg_R_NA, type = "top1",
     args = args_top)
  
 ## type = "top2"
-stat_adj_pos_top2 <- threshold(statistical = stat_adj_pos, type = "top2",
+stat_adj_pos_top2 <- threshold(statistical = stat_adj_pos_NA, type = "top2",
     args = args_top)
-stat_adj_neg_top2 <- threshold(statistical = stat_adj_neg, type = "top2",
+stat_adj_neg_top2 <- threshold(statistical = stat_adj_neg_NA, type = "top2",
+    args = args_top)
+stat_adj_pos_G_top2 <- threshold(statistical = stat_adj_pos_G_NA, type = "top2",
+    args = args_top)
+stat_adj_neg_G_top2 <- threshold(statistical = stat_adj_neg_G_NA, type = "top2",
+    args = args_top)
+stat_adj_pos_W_top2 <- threshold(statistical = stat_adj_pos_W_NA, type = "top2",
+    args = args_top)
+stat_adj_neg_W_top2 <- threshold(statistical = stat_adj_neg_W_NA, type = "top2",
+    args = args_top)
+stat_adj_pos_R_top2 <- threshold(statistical = stat_adj_pos_R_NA, type = "top2",
+    args = args_top)
+stat_adj_neg_R_top2 <- threshold(statistical = stat_adj_neg_R_NA, type = "top2",
     args = args_top)
 
 ## type = "mean"
-stat_adj_pos_mean <- threshold(statistical = stat_adj_pos, type = "mean",
+stat_adj_pos_mean <- threshold(statistical = stat_adj_pos_NA, type = "mean",
     args = args_top)
-stat_adj_neg_mean <- threshold(statistical = stat_adj_neg, type = "mean",
+stat_adj_neg_mean <- threshold(statistical = stat_adj_neg_NA, type = "mean",
     args = args_top)
-
+stat_adj_pos_G_mean <- threshold(statistical = stat_adj_pos_G_NA, type = "mean",
+    args = args_top)
+stat_adj_neg_G_mean <- threshold(statistical = stat_adj_neg_G_NA, type = "mean",
+    args = args_top)
+stat_adj_pos_W_mean <- threshold(statistical = stat_adj_pos_W_NA, type = "mean",
+    args = args_top)
+stat_adj_neg_W_mean <- threshold(statistical = stat_adj_neg_W_NA, type = "mean",
+    args = args_top)
+stat_adj_pos_R_mean <- threshold(statistical = stat_adj_pos_R_NA, type = "mean",
+    args = args_top)
+stat_adj_neg_R_mean <- threshold(statistical = stat_adj_neg_R_NA, type = "mean",
+    args = args_top)
 
 save(stat_adj_pos_thr, stat_adj_pos_top1, stat_adj_pos_top2, stat_adj_pos_mean, 
     file = "MetNet_strawberry_stat_adj_thr_pos.RData")
 save(stat_adj_neg_thr, stat_adj_neg_top1, stat_adj_neg_top2, stat_adj_neg_mean, 
-     file = "MetNet_strawberry_stat_adj_thr_neg.RData")
+    file = "MetNet_strawberry_stat_adj_thr_neg.RData")
+save(stat_adj_pos_G_thr, stat_adj_pos_G_top1, stat_adj_pos_G_top2, stat_adj_pos_G_mean, 
+    stat_adj_pos_W_thr, stat_adj_pos_W_top1, stat_adj_pos_W_top2, stat_adj_pos_W_mean, 
+    stat_adj_pos_R_thr, stat_adj_pos_R_top1, stat_adj_pos_R_top2, stat_adj_pos_R_mean, 
+    file = "MetNet_strawberry_stat_adj_thr_pos_GWR.RData")
+save(stat_adj_neg_G_thr, stat_adj_neg_G_top1, stat_adj_neg_G_top2, stat_adj_neg_G_mean, 
+    stat_adj_neg_W_thr, stat_adj_neg_W_top1, stat_adj_neg_W_top2, stat_adj_neg_W_mean,
+    stat_adj_neg_R_thr, stat_adj_neg_R_top1, stat_adj_neg_R_top2, stat_adj_neg_R_mean, 
+    file = "MetNet_strawberry_stat_adj_thr_neg_GWR.RData")
 
 
 ## set links between features belonging to different pcgroups in struct_adj to
 ## 0 for links that contain the "adduct_" pattern (type = "inter")
 ## set links between features belonging to the same pcgroup in struct_adj to 0
 ## for links that contain the "transf_" pattern (type = "intra")
-setLinkPCgroupTo0 <- function(struct_adj, type = c("inter", "intra"), pattern = "adduct_") {
-    pc <- strsplit(rownames(struct_adj[[1]]), split = "_")
-    pc <- unlist(lapply(pc, "[", 2))
-    pc_u <- unique(pc)    
-
-    inds <- apply(struct_adj[[2]], 2, grepl, pattern = pattern)
-    pc_inds <- inds <- which(inds, arr.ind = TRUE)
-
-    pc_inds[, "row"] <- pc[inds[, "row"]]
-    pc_inds[, "col"] <- pc[inds[, "col"]]
-    
-    if (type == "inter") {
-        ## remove between different pcgroups (pattern = "adduct_")
-        inds_remove <- which(pc_inds[, "row"] != pc_inds[, "col"])
-        
-        for (i in 1:length(inds_remove)) {
-            ind_row <- inds[inds_remove[i], "row"]
-            ind_col <- inds[inds_remove[i], "col"]
-            struct_adj[[1]][ind_row, ind_col] <- 0
-            struct_adj[[2]][ind_row, ind_col] <- ""
-        }
-    }
-        
-    if (type == "intra") {
-        ## remove within the same pcgroup (pattern = "transf_")
-        inds_remove <- which(pc_inds[, "row"] == pc_inds[, "col"])
-        
-        for (i in 1:length(inds_remove)) {
-            ind_row <- inds[inds_remove[i], "row"]
-            ind_col <- inds[inds_remove[i], "col"]
-            struct_adj[[1]][ind_row, ind_col] <- 0
-            struct_adj[[2]][ind_row, ind_col] <- ""
-        }
-    }
-    
-    return(struct_adj)
-}
-
 struct_adj_neg_mod <- setLinkPCgroupTo0(struct_adj_neg, type = "inter", 
     pattern = "adduct_")
 struct_adj_pos_mod <- setLinkPCgroupTo0(struct_adj_pos, type = "inter",
     pattern = "adduct_")
+
+## set links within pcgroups that are isotope peaks to 0, remove all rows and cols 
+## that are isotopes
+
 ##struct_adj_neg_mod <- setLinkPCgroupTo0(struct_adj_neg_mod, type = "intra", 
 ##    pattern = "transf_")
 ##struct_adj_pos_mod <- setLinkPCgroupTo0(struct_adj_pos_mod, type = "intra",
@@ -550,24 +703,63 @@ struct_adj_pos_mod <- setLinkPCgroupTo0(struct_adj_pos, type = "inter",
 ## links from struct_adj for intra pcgroups links are taken 
 stat_adj_pos_thr_mod <- setLinkWithinPCgroupTo(stat_adj_pos_thr, set_to = 1)
 stat_adj_neg_thr_mod <- setLinkWithinPCgroupTo(stat_adj_neg_thr, set_to = 1)
+stat_adj_pos_thr_G_mod <- setLinkWithinPCgroupTo(stat_adj_pos_G_thr, set_to = 1)
+stat_adj_neg_thr_G_mod <- setLinkWithinPCgroupTo(stat_adj_neg_G_thr, set_to = 1)
+stat_adj_pos_thr_W_mod <- setLinkWithinPCgroupTo(stat_adj_pos_W_thr, set_to = 1)
+stat_adj_neg_thr_W_mod <- setLinkWithinPCgroupTo(stat_adj_neg_W_thr, set_to = 1)
+stat_adj_pos_thr_R_mod <- setLinkWithinPCgroupTo(stat_adj_pos_R_thr, set_to = 1)
+stat_adj_neg_thr_R_mod <- setLinkWithinPCgroupTo(stat_adj_neg_R_thr, set_to = 1)
+
+## truncate the structural adjacency matrices for GWR
+struct_adj_pos_mod_G <- struct_adj_pos_mod
+struct_adj_pos_mod_G[[1]] <- struct_adj_pos_mod[[1]][rownames(stat_adj_pos_thr_G_mod), rownames(stat_adj_pos_thr_G_mod)]
+struct_adj_pos_mod_G[[2]] <- struct_adj_pos_mod[[2]][rownames(stat_adj_pos_thr_G_mod), rownames(stat_adj_pos_thr_G_mod)]
+struct_adj_neg_mod_G <- struct_adj_neg_mod
+struct_adj_neg_mod_G[[1]] <- struct_adj_neg_mod[[1]][rownames(stat_adj_neg_thr_G_mod), rownames(stat_adj_neg_thr_G_mod)]
+struct_adj_neg_mod_G[[2]] <- struct_adj_neg_mod[[2]][rownames(stat_adj_neg_thr_G_mod), rownames(stat_adj_neg_thr_G_mod)]
+struct_adj_pos_mod_W <- struct_adj_pos_mod
+struct_adj_pos_mod_W[[1]] <- struct_adj_pos_mod[[1]][rownames(stat_adj_pos_thr_W_mod), rownames(stat_adj_pos_thr_W_mod)]
+struct_adj_pos_mod_W[[2]] <- struct_adj_pos_mod[[2]][rownames(stat_adj_pos_thr_W_mod), rownames(stat_adj_pos_thr_W_mod)]
+struct_adj_neg_mod_W <- struct_adj_neg_mod
+struct_adj_neg_mod_W[[1]] <- struct_adj_neg_mod[[1]][rownames(stat_adj_neg_thr_W_mod), rownames(stat_adj_neg_thr_W_mod)]
+struct_adj_neg_mod_W[[2]] <- struct_adj_neg_mod[[2]][rownames(stat_adj_neg_thr_W_mod), rownames(stat_adj_neg_thr_W_mod)]
+struct_adj_pos_mod_R <- struct_adj_pos_mod
+struct_adj_pos_mod_R[[1]] <- struct_adj_pos_mod[[1]][rownames(stat_adj_pos_thr_R_mod), rownames(stat_adj_pos_thr_R_mod)]
+struct_adj_pos_mod_R[[2]] <- struct_adj_pos_mod[[2]][rownames(stat_adj_pos_thr_R_mod), rownames(stat_adj_pos_thr_R_mod)]
+struct_adj_neg_mod_R <- struct_adj_neg_mod
+struct_adj_neg_mod_R[[1]] <- struct_adj_neg_mod[[1]][rownames(stat_adj_neg_thr_R_mod), rownames(stat_adj_neg_thr_R_mod)]
+struct_adj_neg_mod_R[[2]] <- struct_adj_neg_mod[[2]][rownames(stat_adj_neg_thr_R_mod), rownames(stat_adj_neg_thr_R_mod)]
 
 ## use function combine to combine the structural and statistical information
 cons_adj_pos <- combine(structural = struct_adj_pos_mod, 
     statistical = stat_adj_pos_thr_mod)
 cons_adj_neg <- combine(structural = struct_adj_neg_mod, 
     statistical = stat_adj_neg_thr_mod)
+cons_adj_pos_G <- combine(structural = struct_adj_pos_mod_G, 
+    statistical = stat_adj_pos_thr_G_mod)
+cons_adj_neg_G <- combine(structural = struct_adj_neg_mod_G, 
+    statistical = stat_adj_neg_thr_G_mod)
+cons_adj_pos_W <- combine(structural = struct_adj_pos_mod_W, 
+    statistical = stat_adj_pos_thr_W_mod)
+cons_adj_neg_W <- combine(structural = struct_adj_neg_mod_W, 
+    statistical = stat_adj_neg_thr_W_mod)
+cons_adj_pos_R <- combine(structural = struct_adj_pos_mod_R, 
+    statistical = stat_adj_pos_thr_R_mod)
+cons_adj_neg_R <- combine(structural = struct_adj_neg_mod_R, 
+    statistical = stat_adj_neg_thr_R_mod)
 
 save(cons_adj_pos, file = "MetNet_strawberry_cons_adj_pos.RData")
 save(cons_adj_neg, file = "MetNet_strawberry_cons_adj_neg.RData")
+save(cons_adj_pos_G, cons_adj_pos_W, cons_adj_pos_R, file = "MetNet_strawberry_cons_adj_pos_GWR.RData")
+save(cons_adj_neg_G, cons_adj_neg_W, cons_adj_neg_R, file = "MetNet_strawberry_cons_adj_neg_GWR.RData")
 
-## only retain edges that link to at least two other mass features
+## only retain vertices that link to at least two other mass features
 g_pos <- graph_from_adjacency_matrix(cons_adj_pos[[1]], mode = "directed")
 g_neg <- graph_from_adjacency_matrix(cons_adj_neg[[1]], mode = "directed")
 comp_g_pos <- components(g_pos)
 comp_g_neg <- components(g_neg)
 inds_cut_pos <- comp_g_pos$membership %in% which(comp_g_pos$csize > 2)
 inds_cut_neg <- comp_g_neg$membership %in% which(comp_g_neg$csize > 2)
-
 
 cons_adj_pos_cut <- cons_adj_pos
 cons_adj_neg_cut <- cons_adj_neg
@@ -579,343 +771,201 @@ cons_adj_neg_cut[[2]] <- cons_adj_neg[[2]][inds_cut_neg, inds_cut_neg]
 g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut[[1]], mode = "directed")
 g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut[[1]], mode = "directed")
 
+pdf("net_coms_comp_pos.pdf")
 plot(g_pos, vertex.label.cex = 0.1, vertex.size = 0.1, edge.arrow.width = 0.1,
     edge.arrow.size = 0.1)
+dev.off()
+
+pdf("net_coms_comp_neg.pdf")
+plot(g_neg, vertex.label.cex = 0.1, vertex.size = 0.1, edge.arrow.width = 0.1,
+     edge.arrow.size = 0.1)
+dev.off()
+
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_G[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_G[[1]], mode = "directed")
+comp_g_pos <- components(g_pos)
+comp_g_neg <- components(g_neg)
+inds_cut_pos <- comp_g_pos$membership %in% which(comp_g_pos$csize > 2)
+inds_cut_neg <- comp_g_neg$membership %in% which(comp_g_neg$csize > 2)
+cons_adj_pos_cut_G <- cons_adj_pos_G
+cons_adj_neg_cut_G <- cons_adj_neg_G
+cons_adj_pos_cut_G[[1]] <- cons_adj_pos_G[[1]][inds_cut_pos, inds_cut_pos]
+cons_adj_pos_cut_G[[2]] <- cons_adj_pos_G[[2]][inds_cut_pos, inds_cut_pos]
+cons_adj_neg_cut_G[[1]] <- cons_adj_neg_G[[1]][inds_cut_neg, inds_cut_neg]
+cons_adj_neg_cut_G[[2]] <- cons_adj_neg_G[[2]][inds_cut_neg, inds_cut_neg]
+
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_W[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_W[[1]], mode = "directed")
+comp_g_pos <- components(g_pos)
+comp_g_neg <- components(g_neg)
+inds_cut_pos <- comp_g_pos$membership %in% which(comp_g_pos$csize > 2)
+inds_cut_neg <- comp_g_neg$membership %in% which(comp_g_neg$csize > 2)
+cons_adj_pos_cut_W <- cons_adj_pos_W
+cons_adj_neg_cut_W <- cons_adj_neg_W
+cons_adj_pos_cut_W[[1]] <- cons_adj_pos_W[[1]][inds_cut_pos, inds_cut_pos]
+cons_adj_pos_cut_W[[2]] <- cons_adj_pos_W[[2]][inds_cut_pos, inds_cut_pos]
+cons_adj_neg_cut_W[[1]] <- cons_adj_neg_W[[1]][inds_cut_neg, inds_cut_neg]
+cons_adj_neg_cut_W[[2]] <- cons_adj_neg_W[[2]][inds_cut_neg, inds_cut_neg]
+
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_R[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_R[[1]], mode = "directed")
+comp_g_pos <- components(g_pos)
+comp_g_neg <- components(g_neg)
+inds_cut_pos <- comp_g_pos$membership %in% which(comp_g_pos$csize > 2)
+inds_cut_neg <- comp_g_neg$membership %in% which(comp_g_neg$csize > 2)
+cons_adj_pos_cut_R <- cons_adj_pos_R
+cons_adj_neg_cut_R <- cons_adj_neg_R
+cons_adj_pos_cut_R[[1]] <- cons_adj_pos_R[[1]][inds_cut_pos, inds_cut_pos]
+cons_adj_pos_cut_R[[2]] <- cons_adj_pos_R[[2]][inds_cut_pos, inds_cut_pos]
+cons_adj_neg_cut_R[[1]] <- cons_adj_neg_R[[1]][inds_cut_neg, inds_cut_neg]
+cons_adj_neg_cut_R[[2]] <- cons_adj_neg_R[[2]][inds_cut_neg, inds_cut_neg]
+
 
 ## remove edges between M1+H and M2+Na, M3+H and M4+K, in general when there is 
 ## a link between an adduct and a molecular ion
-
 ## node with outgoing transf link should not have outgoing adduct link when
 ## the adduct-linking vertex has a ingoing adduct link
-
 ## node with ingoing transf link should not have ingoing adduct link when the 
 ## adduct-linking vertex has an outgoing adduct link
-
-## pos mode: isotopic+1, isotopic+2, isotopic+3, Na adduct, K adduct, 
-## formic acid adduct
-## neg mode: isotopic+1, isotopic+2, isotopic+3, formic acid, Na adduct,
-## Sodium formate 
-
-
-##          M1+H    M1+Na   M2+H    M2+Na   M3+H    M3+Na
-## M1+H     0       1       0       0       0       1       
-## M1+Na    0       0       0       0       0       0
-## M2+H     1       0       0       1       0       0
-## M2+Na    0       1       0       0       1       0
-## M3+H     0       1       0       0       0       1
-## M3+Na    0       0       0       0       0       0  
-
-# mat_test <- matrix(c(c(0, 1, 1, 0, 0, 1), ## M1+H
-#                      c(1, 0, 1, 1, 1, 1), ## M1+Na
-#                      c(1, 1, 0, 1, 0, 0), ## M2+H
-#                      c(0, 1, 1, 0, 1, 0), ## M2+Na
-#                      c(0, 1, 0, 1, 0, 1), ## M3+H
-#                      c(0, 1, 0, 0, 1, 0)), ## M3+Na
-#                    
-mat_test <- matrix(c(c(0, 1, 0, 0, 0, 1), ## M1+H
-                     c(0, 0, 0, 0, 0, 0), ## M1+Na
-                     c(1, 0, 0, 1, 0, 0), ## M2+H
-                     c(0, 1, 0, 0, 0, 0), ## M2+Na
-                     c(0, 1, 0, 0, 0, 1), ## M3+H
-                     c(0, 0, 0, 0, 0, 0)), ## M3+Na
-                   byrow = TRUE, ncol = 6, nrow = 6)
-mat_test_transformation <- matrix(c(c("", "adduct_Na", "", "", "", "transf_gluc_F"), ## M1+H
-                     c("", "", "", "", "", ""), ## M1+Na
-                     c("transf_gluc_T", "", "", "adduct_Na", "", ""), ## M2+H
-                     c("", "transf_gluc_T", "", "", "", ""), ## M2+Na
-                     c("", "transf_gluc_F", "", "", "", "adduct_Na"), ## M3+H
-                     c("", "", "", "", "", "")), ## M3+Na
-                   byrow = TRUE, ncol = 6, nrow = 6)
-colnames(mat_test) <- c("M1+H", "M1+Na", "M2+H", "M2+Na", "M3+H", "M3+Na")
-rownames(mat_test) <- colnames(mat_test)
-
-
-## node with outgoing transf link should not have outgoing adduct link when
-## the adduct-linking vertex has an ingoing adduct link of same type
-
-## do for all components
-## iterate through rows
-
-removeFalseLinksAdducts <- function(mat_l) {
-    
-    mat_num <- mat_l[[1]]
-    mat_char <- mat_l[[2]]
-    
-    for (i in seq_len(nrow(mat_num))) {
-        
-        rows_i <- mat_char[i, ]
-        adduct_i <- rows_i[grep(rows_i, pattern = "adduct_")]
-        
-        ## if any vertex has outgoing adduct link, check all cols where rows_i
-        ## has transf if ingoing adduct link exists for adduct-linking feature
-        if (length(adduct_i) > 0) { 
-            
-            inds <- grep(rows_i, pattern = "transf_")
-            
-            for (j in inds) {
-                cols_j <- mat_char[, j]
-                adduct_j <- cols_j[grep(cols_j, pattern = "adduct")]
-                print(i)
-                print(j)
-                if (length(adduct_j) > 0)
-                    if (adduct_j %in% adduct_i)
-                        mat_num[i, j] <- 0 ## remove in mat_test[i, ]
-            }
-        }
-    }
-    
-    ## set mat_char to "" where mat_num == 0
-    mat_char[which(mat_num == 0)] <- ""
-    
-    return(list(mat_num, mat_char))
-}
-
 cons_adj_pos_cut_rem <- removeFalseLinksAdducts(cons_adj_pos_cut)
+cons_adj_neg_cut_rem <- removeFalseLinksAdducts(cons_adj_neg_cut)
+cons_adj_pos_cut_rem_G <- removeFalseLinksAdducts(cons_adj_pos_cut_G)
+cons_adj_neg_cut_rem_G <- removeFalseLinksAdducts(cons_adj_neg_cut_G)
+cons_adj_pos_cut_rem_W <- removeFalseLinksAdducts(cons_adj_pos_cut_W)
+cons_adj_neg_cut_rem_W <- removeFalseLinksAdducts(cons_adj_neg_cut_W)
+cons_adj_pos_cut_rem_R <- removeFalseLinksAdducts(cons_adj_pos_cut_R)
+cons_adj_neg_cut_rem_R <- removeFalseLinksAdducts(cons_adj_neg_cut_R)
 
+## Remove in- and outgoing links based on their relation to the molecular ion
+## The function removeFalseLinksCircular deletes ingoing and outgoing links of 
+## isotopes/adducts to M if there is no circular relation from the molecular 
+## ion M to M+isotope/adduct to M+transf to M+iso/adduct+transformation
+cons_adj_pos_cut_rem <- removeFalseLinksCircular(cons_adj_pos_cut_rem)
+cons_adj_neg_cut_rem <- removeFalseLinksCircular(cons_adj_neg_cut_rem)
+cons_adj_pos_cut_rem_G <- removeFalseLinksCircular(cons_adj_pos_cut_rem_G)
+cons_adj_neg_cut_rem_G <- removeFalseLinksCircular(cons_adj_neg_cut_rem_G)
+cons_adj_pos_cut_rem_W <- removeFalseLinksCircular(cons_adj_pos_cut_rem_W)
+cons_adj_neg_cut_rem_W <- removeFalseLinksCircular(cons_adj_neg_cut_rem_W)
+cons_adj_pos_cut_rem_R <- removeFalseLinksCircular(cons_adj_pos_cut_rem_R)
+cons_adj_neg_cut_rem_R <- removeFalseLinksCircular(cons_adj_neg_cut_rem_R)
 
-g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem[[1]], mode = "directed")
+## write to xml file
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut[[1]], mode = "directed")
 g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_graphml.xml", format = "graphml")
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_rem_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_rem_graphml.xml", format = "graphml")
 
-plot(g_pos, vertex.label.cex = 0.1, vertex.size = 0.1, edge.arrow.width = 0.1, edge.arrow.size = 0.1)
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_G[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_G[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_G_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_G_graphml.xml", format = "graphml")
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_G[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_G[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_rem_G_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_rem_G_graphml.xml", format = "graphml")
 
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_W[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_W[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_W_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_W_graphml.xml", format = "graphml")
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_W[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_W[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_rem_W_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_rem_W_graphml.xml", format = "graphml")
 
-tmp <- removeFalseLinksAdducts(list(mat_test, mat_test_transformation))[[1]]
-net_test <- graph_from_adjacency_matrix(tmp, mode = "directed")
-plot(net_test)
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_R[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_R[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_R_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_R_graphml.xml", format = "graphml")
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_R[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_R[[1]], mode = "directed")
+write_graph(g_pos, file = "cons_adj_pos_cut_rem_R_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_rem_R_graphml.xml", format = "graphml")
 
-
-
-
-## reduce edges using pc_groups from peaklist_pos and peaklist_neg
-## combine edges from one group to one edge representing the pc group
-## create a link between a pc_group when there is at least one link between members of the pc_group
-reduce_cons <- function (cons_mat) {
+## go through components and only take those components that have > 1 
+## different pcgroup
+filter_pc <- function(cons) {
+    inds_cut <- rep(FALSE, nrow(cons[[1]]))
+    g <- graph_from_adjacency_matrix(cons[[1]], mode = "directed")
+    comp <- components(g)
     
-    ## assign the two entries to cons_mat_bin and cons_mat_type
-    cons_mat_bin <- cons_mat[[1]]
-    cons_mat_type <- cons_mat[[2]]
-    
-    ## get pc_groups
-    pc_cons <- unlist(lapply(strsplit(colnames(cons_mat_bin), split = "_"), "[", 2))
-    pc_cons_u <- unique(pc_cons)
-    
-    ## create adjacency matrices
-    mat_pc_bin <- matrix(0, nrow = length(pc_cons_u), ncol = length(pc_cons_u))
-    mat_pc_type <- matrix("", nrow = length(pc_cons_u), ncol = length(pc_cons_u))
-    colnames(mat_pc_bin) <- rownames(mat_pc_bin) <- pc_cons_u
-    colnames(mat_pc_type) <- rownames(mat_pc_type) <- pc_cons_u
-    
-    for (i in 1:length(pc_cons_u)) {
-        inds <- which(pc_cons == pc_cons_u[i])
-        ## get pc_groups to which members of pc_cons_u[i] link to
-        pc_col <- NULL
-        pc_row <- NULL
-        pc_col <- rownames(which(cons_mat[[1]][, inds] == 1, arr.ind = TRUE))
-        
-        if (!is.null(pc_col)) {
-            pc_col <- unlist(lapply(strsplit(pc_col, split = "_"), "[", 2))
-        }
-        
-        pc_row <- rownames(which(t(cons_mat[[1]][inds, ]) == 1, arr.ind = TRUE))
-        
-        if (!is.null(pc_row)) {
-            pc_row <- unlist(lapply(strsplit(pc_row, split = "_"), "[", 2))
-        }
-        
-        if (!is.null(pc_col)) {
-            mat_pc_bin[pc_col, pc_cons_u[i]] <- 1
-            
-            ## collapse-paste all inter feature links
-            for (j in 1:length(pc_col)) {
-                type_paste <- cons_mat[[2]][pc_cons %in% pc_col[j], pc_cons == pc_cons_u[[i]]]
-                type_paste <- names(table(as.vector(type_paste)))
-                type_paste <- type_paste[type_paste != ""]
-                type_paste <- paste(type_paste, collapse = "/")
-                mat_pc_type[pc_col[j], pc_cons_u[i]] <- type_paste
-            }
-        }
-        
-        if (!is.null(pc_row)) {
-            mat_pc_bin[pc_cons_u[i], pc_row] <- 1
-            
-            ## collapse-paste all inter feature links
-            for (j in 1:length(pc_row)) {
-                type_paste <- cons_mat[[2]][pc_cons == pc_cons_u[[i]], pc_cons %in% pc_row[j]]
-                type_paste <- names(table(as.vector(type_paste)))
-                type_paste <- type_paste[type_paste != ""]
-                type_paste <- paste(type_paste, collapse = "/")
-                mat_pc_type[pc_cons_u[i], pc_row[j]] <- type_paste
-            }
+    for (i in 1:comp$no) {
+        ms_i <- comp$membership[comp$membership == i]
+        pc_i <- unlist(lapply(strsplit(names(ms_i), split = "_"), "[", 2))
+        pc_i <- unique(pc_i)
+        if (length(pc_i) > 1) {
+            inds_cut[comp$membership == i] <- TRUE    
         }
     }
-    return(list(mat_pc_bin, mat_pc_type))
-}
-
-
-## reduce the consensus adjacency matrices and save to file
-cons_neg_red <- reduce_cons(cons_adj_neg)
-cons_pos_red <- reduce_cons(cons_adj_pos)
-diag(cons_neg_red[[1]]) <- 0
-diag(cons_pos_red[[1]]) <- 0
-save(cons_neg_red, file="MetNet_strawberry_cons_neg_red.RData")
-save(cons_pos_red, file="MetNet_strawberry_cons_pos_red.RData")
-
-remove_non_connected <- function(cons_red) {
-    ## find nodes that do not connect to others and remove
-    inds_1 <- apply(cons_red[[1]], 1, function(x) all(x == 0))
-    inds_2 <- apply(cons_red[[1]], 2, function(x) all(x == 0))
-    inds <- intersect(which(inds_1), which(inds_2))
-    cons_red_1 <- cons_red[[1]][-inds, -inds]
-    cons_red_2 <- cons_red[[2]][-inds, -inds]
-    return(list(cons_red_1, cons_red_2))
-}
-
-cons_neg_red_0 <- remove_non_connected(cons_neg_red)
-cons_pos_red_0 <- remove_non_connected(cons_pos_red)
-
-g_neg <- graph_from_adjacency_matrix(cons_neg_red_0[[1]], mode="undirected")
-g_pos <- graph_from_adjacency_matrix(cons_pos_red_0[[1]], mode="undirected")
-
-pdf("network_cons_neg_red_0.pdf")
-plot(g_neg, vertex.size=0.5, vertex.label.cex=0.1)
-dev.off()
-
-## 9, 10 only in condition 1
-## 7 only in condition 2
-## 8 in condition 2 and 3
-## 6 only in condition 3
-## 1-5 in condition 1-3
-peaklist_neg[peaklist_neg[, "pcgroup"] == 2, ]
-
-inds_samples_neg <- which(colnames(peaklist_neg) == "X156_G"):which(colnames(peaklist_neg) == "SantaClara_W")
-inds_samples_pos <- which(colnames(peaklist_pos) == "X156_G"):which(colnames(peaklist_pos) == "SantaClara_W")
-
-
-sample_presence_neg <- rbind(c("X156_G", 3), c("X156_R", 3), c("X156_W", 3), c("X191_G", 3), 
-    c("X191_R", 3), c("X191_W", 3), c("X196_G", 3), c("X196_R", 3), c("X196_W", 3), c("X282_G", 3), 
-    c("X282_R", 3), c("X282_W", 3), c("X591_G", 3), c("X591_R", 3), c("X591_W", 3), c("X595_G", 3), 
-    c("X595_R", 3), c("X595_W", 3), c("X660_G", 3), c("X660_R", 3), c("X660_W", 3), c("Amiga_G", 3),
-    c("Amiga_R", 3), c("Amiga_W", 3), c("Benicia_G", 3), c("Benicia_R", 3), c("Benicia_W", 3),
-    c("Candonga_G", 2), c("Candonga_R", 3), c("Candonga_W", 3), c("Fontanilla_G", 3), c("Fontanilla_R", 3),
-    c("Fontanilla_W", 3), c("Fuentepina_G", 3), c("Fuentepina_R", 3), c("Fuentepina_W", 3), 
-    c("SantaClara_G", 3), c("SantaClara_R", 3), c("SantaClara_W", 3))
-sample_presence_pos <- rbind(c("X156_G", 3), c("X156_R", 3), c("X156_W", 3), c("X191_G", 3), 
-    c("X191_R", 3), c("X191_W", 3), c("X196_G", 3), c("X196_R", 3), c("X196_W", 3), c("X282_G", 3), 
-    c("X282_R", 3), c("X282_W", 3), c("X591_G", 3), c("X591_R", 3), c("X591_W", 3), c("X595_G", 3), 
-    c("X595_R", 3), c("X595_W", 3), c("X660_G", 3), c("X660_R", 3), c("X660_W", 3), c("Amiga_G", 3),
-    c("Amiga_R", 3), c("Amiga_W", 3), c("Benicia_G", 3), c("Benicia_R", 3), c("Benicia_W", 3),
-    c("Camarosa_G", 3), c("Camarosa_R", 3), c("Camarosa_W", 3), c("Candonga_G", 3), 
-    c("Candonga_R", 3), c("Candonga_W", 3), c("Fontanilla_G", 3), c("Fontanilla_R", 3),
-    c("Fontanilla_W", 3), c("Fuentepina_G", 3), c("Fuentepina_R", 3), c("Fuentepina_W", 3), 
-    c("SantaClara_G", 3), c("SantaClara_R", 3), c("SantaClara_W", 3))
-
-create_presence_mat <- function(cons_red_0, peaklist, sample_presence) {
+    cons_cut <- cons
+    cons_cut[[1]] <- cons_cut[[1]][inds_cut, inds_cut]
+    cons_cut[[2]] <- cons_cut[[2]][inds_cut, inds_cut]
+    return(cons_cut)
     
-    sample_presence <- data.frame(geno=as.character(sample_presence[,1]), num=as.numeric(sample_presence[,2]))
-    presence_mat <- matrix(0, ncol=length(sample_presence$geno), nrow=0)
-    colnames(presence_mat) <- sample_presence$geno
-    
-    for (i in 1:nrow(cons_red_0)) {
-        print(i)
-        pcgroup <- rownames(cons_red_0)[i]     
-        peak_pc <- peaklist[peaklist[, "pcgroup"] == pcgroup, ]
-        ## define a metabolite as present when it is found in more than two thirds of members of a pcgroup
-        peak_pc_pres <- peak_pc[, as.character(sample_presence$geno)] >= sample_presence$num
-        peak_pc_pres <- apply(peak_pc_pres, 2, function(x) sum(x) / dim(peak_pc_pres)[1] >= 2/3)
-        peak_pc_mat <- matrix(peak_pc_pres, nrow=1)
-        rownames(peak_pc_mat) <- pcgroup
-        presence_mat <- rbind(presence_mat, ifelse(peak_pc_pres, 1, 0))
-        rownames(presence_mat)[i] <- pcgroup
-    }
-    return(presence_mat)
 }
 
-## create function that iterates through all pcgroups, it returns the
-## row which has highest mean intensity value of this pcgroup
-create_reduced_peaklist <- function(cons_red_0, peaklist, inds) {
-    peaklist_red <- matrix(0, ncol=ncol(peaklist), nrow=0)
-    colnames(peaklist_red) <- colnames(peaklist)
-    pcgroup <- rownames(cons_red_0)
-    for (i in 1:length(pcgroup)) {
-        inds_row <- which(peaklist[, "pcgroup"] == pcgroup[i])
-        
-        if (length(inds_row) > 1) {
-            mean_row <- apply(peaklist[inds_row, inds], 1, mean)
-            peaklist_add <- peaklist[inds_row,]##[which.max(mean_row)],]    
-            peaklist_red <- rbind(peaklist_red, peaklist_add)
-        } else { ## remove singletons
-            peaklist_add <- peaklist[inds_row, ]
-        }
-        
-        
-    }
-    return(peaklist_red)
-}
-peaklist_neg_red <- create_reduced_peaklist(cons_neg_red_0, peaklist_neg, inds_neg)
+cons_adj_pos_cut_rem_cut <- filter_pc(cons_adj_pos_cut_rem)
+cons_adj_neg_cut_rem_cut <- filter_pc(cons_adj_neg_cut_rem)
+cons_adj_pos_cut_rem_cut_G <- filter_pc(cons_adj_pos_cut_rem_G)
+cons_adj_neg_cut_rem_cut_G <- filter_pc(cons_adj_neg_cut_rem_G)
+cons_adj_pos_cut_rem_cut_W <- filter_pc(cons_adj_pos_cut_rem_W)
+cons_adj_neg_cut_rem_cut_W <- filter_pc(cons_adj_neg_cut_rem_W)
+cons_adj_pos_cut_rem_cut_R <- filter_pc(cons_adj_pos_cut_rem_R)
+cons_adj_neg_cut_rem_cut_R <- filter_pc(cons_adj_neg_cut_rem_R)
 
-source("~/winhome/Documents/R_functions/fuzzy_clustering.R")
+g_pos <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_cut[[1]], mode = "directed")
+g_neg <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_cut[[1]], mode = "directed")
+g_pos_G <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_cut_G[[1]], mode = "directed")
+g_neg_G <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_cut_G[[1]], mode = "directed")
+g_pos_W <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_cut_W[[1]], mode = "directed")
+g_neg_W <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_cut_W[[1]], mode = "directed")
+g_pos_R <- graph_from_adjacency_matrix(cons_adj_pos_cut_rem_cut_R[[1]], mode = "directed")
+g_neg_R <- graph_from_adjacency_matrix(cons_adj_neg_cut_rem_cut_R[[1]], mode = "directed")
 
-estimClustNum_neg <- estimClustNum(peaklist_neg_red[, inds_neg], maxClust=30)
-ClustComp_neg <- ClustComp(peaklist_neg_red[, inds_neg], NSs=50, NClust=estimClustNum_neg$numclust, cores=1)
-plot_clusters(ClustComp_neg, peaklist_neg_red[, inds_neg], filename="clustering_clustComp_neg.pdf")
+write_graph(g_pos, file = "cons_adj_pos_cut_rem_cut_graphml.xml", format = "graphml")
+write_graph(g_neg, file = "cons_adj_neg_cut_rem_cut_graphml.xml", format = "graphml")
+write_graph(g_pos_G, file = "cons_adj_pos_cut_rem_cut_G_graphml.xml", format = "graphml")
+write_graph(g_neg_G, file = "cons_adj_neg_cut_rem_cut_G_graphml.xml", format = "graphml")
+write_graph(g_pos_W, file = "cons_adj_pos_cut_rem_cut_W_graphml.xml", format = "graphml")
+write_graph(g_neg_W, file = "cons_adj_neg_cut_rem_cut_W_graphml.xml", format = "graphml")
+write_graph(g_pos_R, file = "cons_adj_pos_cut_rem_cut_R_graphml.xml", format = "graphml")
+write_graph(g_neg_R, file = "cons_adj_neg_cut_rem_cut_R_graphml.xml", format = "graphml")
 
-peaklist_neg_red_z <- t(apply(peaklist_neg_red[, inds_neg], 1, function(x) (x - mean(x)) / sd(x)))
+save(cons_adj_pos_cut_rem_cut, cons_adj_neg_cut_rem_cut, 
+    cons_adj_pos_cut_rem_cut_G, cons_adj_neg_cut_rem_cut_G,
+    cons_adj_pos_cut_rem_cut_W, cons_adj_neg_cut_rem_cut_W,
+    cons_adj_pos_cut_rem_cut_R, cons_adj_neg_cut_rem_cut_R, 
+    file = "cons_adj_cut_rem_cut.RData")
 
-pheatmap(peaklist_neg_red_z[names(which(ClustComp_neg$Bestcl$cluster == 5)), ], cluster_cols=FALSE)
+## write peaklists
+write.table(peaklist_pos[rownames(cons_adj_pos_cut_rem_cut[[1]]), ], 
+    file = "cons_adj_pos_cut_rem_cut_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_neg[rownames(cons_adj_neg_cut_rem_cut[[1]]), ], 
+    file = "cons_adj_neg_cut_rem_cut_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_pos_W[rownames(cons_adj_pos_cut_rem_cut_W[[1]]), ], 
+    file = "cons_adj_pos_cut_rem_cut_W_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_neg_W[rownames(cons_adj_neg_cut_rem_cut_W[[1]]), ], 
+    file = "cons_adj_neg_cut_rem_cut_W_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_pos_G[rownames(cons_adj_pos_cut_rem_cut_G[[1]]), ], 
+    file = "cons_adj_pos_cut_rem_cut_G_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_neg_G[rownames(cons_adj_neg_cut_rem_cut_G[[1]]), ], 
+    file = "cons_adj_neg_cut_rem_cut_G_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_pos_R[rownames(cons_adj_pos_cut_rem_cut_R[[1]]), ], 
+    file = "cons_adj_pos_cut_rem_cut_R_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
+write.table(peaklist_neg_R[rownames(cons_adj_neg_cut_rem_cut_R[[1]]), ], 
+    file = "cons_adj_neg_cut_rem_cut_R_peaklist.txt", sep = "\t", dec = ".", 
+    quote = FALSE, row.names = TRUE)
 
 
-library(amap)
-peaklist_neg_red_z <- t(apply(peaklist_neg_red[, inds_neg], 1, function(x) (x - mean(x)) / sd(x)))
-clust_neg <- amap::hcluster(peaklist_neg_red_z, method="correlation")
-plot(clust_neg)
 
-pheatmap(peaklist_neg_red_z, clustering_distance_rows="correlation", clustering_distance_cols="correlation")
-
-M.pca <- prcomp(peaklist_neg_red_z, scale = TRUE, center = TRUE)
-loadings <- data.frame(M.pca$rotation[, 1:2], names=rownames(M.pca$rotation))
-imp <- peaklist_neg_red[names(sort(sqrt((M.pca$x[,1]^2) + (M.pca$x[,2])^2), decreasing=T)[1:100]), "pcgroup"]
-cons_neg_red_0_imp <- cons_neg_red_0[imp, imp]
-ind <- apply(cons_neg_red_0_imp, 1, function(x) any(x > 0))
-cons_neg_red_0_imp <- cons_neg_red_0_imp[ind, ind]
-
-g <- igraph::graph_from_adjacency_matrix(cons_neg_red_0_imp, mode="undirected")
-plot(g, vertex.label.cex=0.5, vertex.size=1)
-
-
-ggplot(loadings, aes(x=PC1, y=PC2)) + 
-    ##geom_text(aes(x=PC1, y=PC2+0.008,label=names), size = 2.5) + 
-    geom_point(size=2.0) +
-    scale_shape_manual("", values=shapes) + 
-    scale_fill_manual("", values=fillings) + ## was values=fillings
-    xlab("PC1 (82.77%)") + ylab("PC2 (4.23%)")
-
-
-presence_mat_neg <- create_presence_mat(cons_neg_red_0, peaklist_neg, sample_presence_neg)
-presence_mat_pos <- create_presence_mat(cons_pos_red_0, peaklist_pos, sample_presence_pos)
-
-extract_module <- function(reduced_adj, presence_mat, cond) {
-    col_c <- which(colnames(presence_mat) %in% cond)
-    col_c_n <- which(!colnames(presence_mat) %in% cond)
-    ## which cells per row are not present in cond_not
-    ## get rows if the condition is true
-    feat <- apply(presence_mat, 1, function(x) all(x[col_c_n] != 1))
-    feat <- which(feat)
-    
-    reduced_adj_r <- matrix(reduced_adj[feat, feat], ncol=length(feat), byrow=TRUE)
-    rownames(reduced_adj_r) <- colnames(reduced_adj_r) <- names(feat)
-    
-    return(reduced_adj_r)
-}
-
-wild_species <- colnames(peaklist_neg[, inds_samples_neg])[grep(colnames(peaklist_neg[, inds_samples_neg]), pattern="X[0-9]")]
-
-plot(graph_from_adjacency_matrix(extract_module(reduced_mat, presence_mat, cond=c("cond1", "cond2", "cond3")), mode="undirected"))
-
-plot(graph_from_adjacency_matrix(extract_module(cons_neg_red_0, presence_mat_neg, cond=wild_species), mode="undirected"))
-##
-library(igraph)
-g_pos <- graph_from_adjacency_matrix(cons_adj_pos, mode="undirected")
-g_neg <- graph_from_adjacency_matrix(cons_adj_neg, mode="undirected")
-comp_g_pos <- components(g_pos)
-comp_g_neg <- components(g_neg)
-plot(g_pos, edge.width=5, vertex.label.cex=0.5, edge.color="grey")
